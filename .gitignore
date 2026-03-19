@@ -14,7 +14,6 @@ deploy.json
 *.dylib
 *.test
 *.out
-server
 
 # Environment
 .env
