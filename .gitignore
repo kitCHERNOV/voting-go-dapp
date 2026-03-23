@@ -29,3 +29,8 @@ deploy.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Plans
+plan.md
+quizzical-tinkering-dusk.md
+STAGE2_PROGRESS
