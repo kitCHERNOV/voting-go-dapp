@@ -4,16 +4,21 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"voting-dapp/internal/api"
 	"voting-dapp/internal/blockchain"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func main() {
 	rpcURL := getEnv("RPC_URL", "http://127.0.0.1:8545")
-	contractAddr := getEnv("CONTRACT_ADDRESS", "")
+	contractAddr := strings.TrimSpace(getEnv("CONTRACT_ADDRESS", ""))
 	if contractAddr == "" {
 		log.Fatal("CONTRACT_ADDRESS is required")
+	} else if !common.IsHexAddress(contractAddr) {
+		log.Fatalf("invalid contract address: %q", contractAddr)
 	}
 
 	// Подключаемся к контракту через go-ethereum
