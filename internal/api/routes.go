@@ -37,11 +37,20 @@ func SetupRouter(client *blockchain.Client) chi.Router {
 		r.Get("/{id}/votes/{addr}", h.CheckVoted)
 
 		// Голосование
-		r.Post("/{id}/vote", h.Vote)
+		// r.Post("/{id}/vote", h.Vote)
 
 		// Финализация
 		r.Post("/{id}/finalize", h.FinalizeProposal)
+
+		// Stage 2: Commit-Reveal
+		r.Post("/{id}/commit", h.Commit)
+		r.Post("/{id}/reveal", h.Reveal)
+		r.Get("/{id}/phase", h.GetPhase)
+		r.Post("/{id}/advance-phase", h.AdvancePhase)
 	})
+
+	// Утилиты
+	r.Post("/api/tools/commit-hash", h.GenerateCommitHash)
 
 	return r
 }

@@ -2,13 +2,16 @@ package api
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
-	"log"
+	"fmt"
 	"math/big"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 	"voting-dapp/internal/blockchain"
+	"voting-dapp/internal/voting"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/go-chi/chi/v5"
@@ -63,27 +66,18 @@ func (h *Handler) GetProposal(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := ctxWithTimeout()
 	defer cancel()
 
-	proposal, err := h.client.GetProposal(ctx, id)
+	info, err := h.client.GetProposalInfo(ctx, id)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
 	}
 
-	if proposal.Id.Cmp(big.NewInt(0)) == 0 {
+	if info["id"] == uint64(0) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "proposal not found"})
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"id":          proposal.Id.Uint64(),
-		"title":       proposal.Title,
-		"description": proposal.Description,
-		"creator":     proposal.Creator.Hex(),
-		"start_time":  proposal.StartTime.Uint64(),
-		"end_time":    proposal.EndTime.Uint64(),
-		"finalized":   proposal.Finalized,
-		"total_votes": proposal.TotalVotes.Uint64(),
-	})
+	writeJSON(w, http.StatusOK, info)
 }
 
 // GetResults - возвращает результаты голосования: Id кандидатов и количество голосов
@@ -152,45 +146,45 @@ func (h *Handler) CheckVoted(w http.ResponseWriter, r *http.Request) {
 
 // Vote - принимает голос, подписывает транзакцию и отправляет в контракт
 // POST /api/proposals/{id}/vote
-func (h *Handler) Vote(w http.ResponseWriter, r *http.Request) {
-	id, err := parseProposalID(r)
-	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid proposal ID"})
-		return
-	}
+// func (h *Handler) Vote(w http.ResponseWriter, r *http.Request) {
+// 	id, err := parseProposalID(r)
+// 	if err != nil {
+// 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid proposal ID"})
+// 		return
+// 	}
 
-	// Десериализуем тело запроса
-	var req VoteRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
-		return
-	}
+// 	// Десериализуем тело запроса
+// 	var req VoteRequest
+// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+// 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+// 		return
+// 	}
 
-	// Валидация полей
-	if req.PrivateKey == "" {
-		log.Printf("request: %+v", req)
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Private key is required"})
-		return
-	}
-	if req.CandidateID == 0 {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Candidate ID is required"})
-		return
-	}
+// 	// Валидация полей
+// 	if req.PrivateKey == "" {
+// 		log.Printf("request: %+v", req)
+// 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Private key is required"})
+// 		return
+// 	}
+// 	if req.CandidateID == 0 {
+// 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Candidate ID is required"})
+// 		return
+// 	}
 
-	ctx, cancel := ctxWithTimeout()
-	defer cancel()
+// 	ctx, cancel := ctxWithTimeout()
+// 	defer cancel()
 
-	txHash, err := h.client.Vote(ctx, req.PrivateKey, id, req.CandidateID)
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-		return
-	}
+// 	txHash, err := h.client.Vote(ctx, req.PrivateKey, id, req.CandidateID)
+// 	if err != nil {
+// 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+// 		return
+// 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{
-		"tx_hash": txHash,
-		"status":  "submitted",
-	})
-}
+// 	writeJSON(w, http.StatusOK, map[string]any{
+// 		"tx_hash": txHash,
+// 		"status":  "submitted",
+// 	})
+// }
 
 // GetAllProposals — возвращает список всех голосований
 // GET /api/proposals
@@ -274,3 +268,231 @@ func (h *Handler) FinalizeProposal(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+
+// CommitRequest — тело запроса для фазы commit
+type CommitRequest struct {
+	PrivateKey string `json:"private_key"`
+	CommitHash string `json:"commit_hash"`
+	DepositWei string `json:"deposit_wei"`
+}
+
+// Commit — отправляет commit хеш с депозитом
+// POST /api/proposals/{id}/commit
+func (h *Handler) Commit(w http.ResponseWriter, r *http.Request) {
+	id, err := parseProposalID(r)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid proposal id"})
+		return
+	}
+
+	var req CommitRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return
+	}
+
+	if req.PrivateKey == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "private_key is required"})
+		return
+	}
+	if req.CommitHash == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "commit_hash is required"})
+		return
+	}
+	if req.DepositWei == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "deposit_wei is required"})
+		return
+	}
+
+	// Декодируем commit hash из hex строки
+	hashBytes, err := hexToBytes32(req.CommitHash)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid commit_hash format"})
+		return
+	}
+
+	// Парсим депозит
+	deposit, ok := new(big.Int).SetString(req.DepositWei, 10)
+	if !ok {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid deposit_wei"})
+		return
+	}
+
+	ctx, cancel := ctxWithTimeout()
+	defer cancel()
+
+	txHash, err := h.client.Commit(ctx, req.PrivateKey, id, hashBytes, deposit)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{
+		"tx_hash": txHash,
+		"status":  "committed",
+	})
+}
+
+// RevealRequest — тело запроса для фазы reveal
+type RevealRequest struct {
+	PrivateKey  string `json:"private_key"`
+	CandidateID uint64 `json:"candidate_id"`
+	Salt        string `json:"salt"`
+}
+
+// Reveal — раскрывает голос (candidateId + salt)
+// POST /api/proposals/{id}/reveal
+func (h *Handler) Reveal(w http.ResponseWriter, r *http.Request) {
+	id, err := parseProposalID(r)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid proposal id"})
+		return
+	}
+
+	var req RevealRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return
+	}
+
+	if req.PrivateKey == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "private_key is required"})
+		return
+	}
+	if req.CandidateID == 0 {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "candidate_id is required"})
+		return
+	}
+	if req.Salt == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "salt is required"})
+		return
+	}
+
+	saltBytes, err := hexToBytes32(req.Salt)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid salt format"})
+		return
+	}
+
+	ctx, cancel := ctxWithTimeout()
+	defer cancel()
+
+	txHash, err := h.client.Reveal(ctx, req.PrivateKey, id, req.CandidateID, saltBytes)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{
+		"tx_hash": txHash,
+		"status":  "revealed",
+	})
+}
+
+// GetPhase — возвращает текущую фазу голосования
+// GET /api/proposals/{id}/phase
+func (h *Handler) GetPhase(w http.ResponseWriter, r *http.Request) {
+	id, err := parseProposalID(r)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid proposal id"})
+		return
+	}
+
+	ctx, cancel := ctxWithTimeout()
+	defer cancel()
+
+	info, err := h.client.GetProposalInfo(ctx, id)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"proposal_id": id,
+		"phase":       info["phase"],
+	})
+}
+
+// GenerateCommitHash — утилита: генерирует CommitData (hash + salt) для фазы commit
+// POST /api/tools/commit-hash
+func (h *Handler) GenerateCommitHash(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		CandidateID uint64 `json:"candidate_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return
+	}
+	if req.CandidateID == 0 {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "candidate_id is required"})
+		return
+	}
+
+	commitData, err := voting.NewCommit(new(big.Int).SetUint64(req.CandidateID))
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"candidate_id": req.CandidateID,
+		"commit_hash":  fmt.Sprintf("0x%x", commitData.Hash),
+		"salt":         fmt.Sprintf("0x%x", commitData.Salt),
+		"warning":      "Save the salt! It is required for reveal phase. Backend does NOT store it.",
+	})
+}
+
+
+// AdvancePhaseRequest — тело запроса для смены фазы
+type AdvancePhaseRequest struct {
+	PrivateKey string `json:"private_key"`
+}
+
+// AdvancePhase — переводит голосование в следующую фазу
+// POST /api/proposals/{id}/advance-phase
+func (h *Handler) AdvancePhase(w http.ResponseWriter, r *http.Request) {
+	id, err := parseProposalID(r)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid proposal id"})
+		return
+	}
+
+	var req AdvancePhaseRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return
+	}
+	if req.PrivateKey == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "private_key is required"})
+		return
+	}
+
+	ctx, cancel := ctxWithTimeout()
+	defer cancel()
+
+	txHash, err := h.client.AdvancePhase(ctx, req.PrivateKey, id)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{
+		"tx_hash": txHash,
+		"status":  "phase advanced",
+	})
+}
+
+// hexToBytes32 — конвертирует hex строку (с 0x или без) в [32]byte
+func hexToBytes32(hexStr string) ([32]byte, error) {
+	hexStr = strings.TrimPrefix(hexStr, "0x")
+	var result [32]byte
+	b, err := hex.DecodeString(hexStr)
+	if err != nil {
+		return result, err
+	}
+	if len(b) > 32 {
+		return result, fmt.Errorf("hex value exceeds 32 bytes")
+	}
+	copy(result[32-len(b):], b)
+	return result, nil
+}
