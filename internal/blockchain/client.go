@@ -24,7 +24,8 @@ func NewClient(rpcURL, contractAddr string) (*Client, error) {
 		return nil, err
 	}
 
-	addr := common.HexToAddress(contractAddr)
+	// addr := common.HexToAddress(contractAddr)
+	addr := common.HexToAddress(strings.ToLower(contractAddr))
 	voting, err := NewVoting(addr, eth)
 	if err != nil {
 		return nil, err
@@ -57,51 +58,21 @@ func toUint64Slice(in []*big.Int) []uint64 {
 
 // GetProposal — читает данные голосования напрямую из контракта по ID
 func (c *Client) GetProposal(ctx context.Context, id uint64) (struct {
-	Id          *big.Int
-	Title       string
-	Description string
-	Creator     common.Address
-	StartTime   *big.Int
-	EndTime     *big.Int
-	Finalized   bool
-	TotalVotes  *big.Int
+	Id              *big.Int
+	Title           string
+	Description     string
+	Creator         common.Address
+	StartTime       *big.Int
+	EndTime         *big.Int
+	Finalized       bool
+	TotalVotes      *big.Int
+	CommitDeadline  *big.Int
+	RevealDeadline  *big.Int
+	DepositRequired *big.Int
+	Phase           uint8
 }, error) {
 	opts := &bind.CallOpts{Context: ctx}
 	return c.voting.Proposals(opts, new(big.Int).SetUint64(id))
-}
-
-// Vote - отправляет транзакцию с голосом за кандидата в конкретном голосовании
-func (c *Client) Vote(ctx context.Context, privateKeyHex string, proposalID, candidateID uint64) (string, error) {
-	// Убираем префикс "0x", если он есть
-	privateKeyHex = strings.TrimPrefix(privateKeyHex, "0x")
-
-	// парсим приватный ключ
-	privateKey, err := crypto.HexToECDSA(privateKeyHex)
-	if err != nil {
-		return "", fmt.Errorf("Invalid private key: %w", err)
-	}
-
-	// Получаем chainID от ноды
-	chainID, err := c.eth.ChainID(ctx)
-	if err != nil {
-		return "", fmt.Errorf("get chainID: %w", err)
-	}
-
-	// Создаем opts для подписи транзакции
-	opts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
-	if err != nil {
-		return "", fmt.Errorf("create transactor: %w", err)
-	}
-
-	// Отправляем транзакцию в контракт
-	tx, err := c.voting.Vote(opts,
-		new(big.Int).SetUint64(proposalID),
-		new(big.Int).SetUint64(candidateID),
-	)
-	if err != nil {
-		return "", fmt.Errorf("send vote transaction: %w", err)
-	}
-	return tx.Hash().Hex(), nil
 }
 
 // GetAllProposals - возвращает все голосования по счетчику proposalCount
@@ -120,14 +91,18 @@ func (c *Client) GetAllProposals(ctx context.Context) ([]map[string]any, error) 
 			return nil, fmt.Errorf("get proposal %d; %w", i, err)
 		}
 		proposals = append(proposals, map[string]any{
-			"id":          p.Id.Uint64(),
-			"title":       p.Title,
-			"description": p.Description,
-			"creator":     p.Creator.Hex(),
-			"start_time":  p.StartTime.Uint64(),
-			"end_time":    p.EndTime.Uint64(),
-			"finalized":   p.Finalized,
-			"total_votes": p.TotalVotes.Uint64(),
+			"id":               p.Id.Uint64(),
+			"title":            p.Title,
+			"description":      p.Description,
+			"creator":          p.Creator.Hex(),
+			"start_time":       p.StartTime.Uint64(),
+			"end_time":         p.EndTime.Uint64(),
+			"finalized":        p.Finalized,
+			"total_votes":      p.TotalVotes.Uint64(),
+			"commit_deadline":  p.CommitDeadline.Uint64(),
+			"reveal_deadline":  p.RevealDeadline.Uint64(),
+			"deposit_required": p.DepositRequired.String(),
+			"phase":            p.Phase,
 		})
 	}
 	return proposals, nil
@@ -186,4 +161,152 @@ func (c *Client) FinalizeProposal(ctx context.Context, privateKeyHex string, pro
 	}
 
 	return tx.Hash().Hex(), nil
+}
+
+// Commit — отправляет транзакцию commit с хешем голоса и депозитом
+func (c *Client) Commit(ctx context.Context, privateKeyHex string, proposalID uint64, commitHash [32]byte, depositWei *big.Int) (string, error) {
+	privateKeyHex = strings.TrimPrefix(privateKeyHex, "0x")
+
+	privateKey, err := crypto.HexToECDSA(privateKeyHex)
+	if err != nil {
+		return "", fmt.Errorf("invalid private key: %w", err)
+	}
+
+	chainID, err := c.eth.ChainID(ctx)
+	if err != nil {
+		return "", fmt.Errorf("get chainID: %w", err)
+	}
+
+	opts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		return "", fmt.Errorf("create transactor: %w", err)
+	}
+	opts.Context = ctx
+	opts.Value = depositWei
+
+	tx, err := c.voting.Commit(opts, new(big.Int).SetUint64(proposalID), commitHash)
+	if err != nil {
+		return "", fmt.Errorf("commit tx: %w", err)
+	}
+	return tx.Hash().Hex(), nil
+}
+
+// Reveal — раскрывает голос, верификация происходит в контракте
+func (c *Client) Reveal(ctx context.Context, privateKeyHex string, proposalID, candidateID uint64, salt [32]byte) (string, error) {
+	privateKeyHex = strings.TrimPrefix(privateKeyHex, "0x")
+
+	privateKey, err := crypto.HexToECDSA(privateKeyHex)
+	if err != nil {
+		return "", fmt.Errorf("invalid private key: %w", err)
+	}
+
+	chainID, err := c.eth.ChainID(ctx)
+	if err != nil {
+		return "", fmt.Errorf("get chainID: %w", err)
+	}
+
+	opts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		return "", fmt.Errorf("create transactor: %w", err)
+	}
+	opts.Context = ctx
+
+	tx, err := c.voting.Reveal(opts,
+		new(big.Int).SetUint64(proposalID),
+		new(big.Int).SetUint64(candidateID),
+		salt,
+	)
+	if err != nil {
+		return "", fmt.Errorf("reveal tx: %w", err)
+	}
+	return tx.Hash().Hex(), nil
+}
+
+// SlashNoReveal — срезает депозит участника не раскрывшего голос
+func (c *Client) SlashNoReveal(ctx context.Context, privateKeyHex string, proposalID uint64, voter common.Address) (string, error) {
+	privateKeyHex = strings.TrimPrefix(privateKeyHex, "0x")
+
+	privateKey, err := crypto.HexToECDSA(privateKeyHex)
+	if err != nil {
+		return "", fmt.Errorf("invalid private key: %w", err)
+	}
+
+	chainID, err := c.eth.ChainID(ctx)
+	if err != nil {
+		return "", fmt.Errorf("get chainID: %w", err)
+	}
+
+	opts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		return "", fmt.Errorf("create transactor: %w", err)
+	}
+	opts.Context = ctx
+
+	tx, err := c.voting.SlashNoReveal(opts, new(big.Int).SetUint64(proposalID), voter)
+	if err != nil {
+		return "", fmt.Errorf("slash tx: %w", err)
+	}
+	return tx.Hash().Hex(), nil
+}
+
+// AdvancePhase — переводит голосование в следующую фазу
+func (c *Client) AdvancePhase(ctx context.Context, privateKeyHex string, proposalID uint64) (string, error) {
+	privateKeyHex = strings.TrimPrefix(privateKeyHex, "0x")
+
+	privateKey, err := crypto.HexToECDSA(privateKeyHex)
+	if err != nil {
+		return "", fmt.Errorf("invalid private key: %w", err)
+	}
+
+	chainID, err := c.eth.ChainID(ctx)
+	if err != nil {
+		return "", fmt.Errorf("get chainID: %w", err)
+	}
+
+	opts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		return "", fmt.Errorf("create transactor: %w", err)
+	}
+	opts.Context = ctx
+
+	tx, err := c.voting.AdvancePhase(opts, new(big.Int).SetUint64(proposalID))
+	if err != nil {
+		return "", fmt.Errorf("advance phase tx: %w", err)
+	}
+	return tx.Hash().Hex(), nil
+}
+
+// GetPhase — возвращает текущую фазу голосования (0=Commit, 1=Reveal, 2=Finalized)
+func (c *Client) GetPhase(ctx context.Context, proposalID uint64) (uint8, error) {
+	opts := &bind.CallOpts{Context: ctx}
+	p, err := c.voting.Proposals(opts, new(big.Int).SetUint64(proposalID))
+	if err != nil {
+		return 0, fmt.Errorf("get proposal: %w", err)
+	}
+	return p.Phase, nil
+}
+
+// GetProposalInfo — возвращает полную информацию о голосовании включая поля Stage 2
+func (c *Client) GetProposalInfo(ctx context.Context, id uint64) (map[string]any, error) {
+	opts := &bind.CallOpts{Context: ctx}
+	info, err := c.voting.GetProposalInfo(opts, new(big.Int).SetUint64(id))
+	if err != nil {
+		return nil, fmt.Errorf("get proposal info: %w", err)
+	}
+
+	phaseNames := map[uint8]string{0: "commit", 1: "reveal", 2: "finalized"}
+
+	return map[string]any{
+		"id":               info.Id.Uint64(),
+		"title":            info.Title,
+		"description":      info.Description,
+		"creator":          info.Creator.Hex(),
+		"start_time":       info.StartTime.Uint64(),
+		"commit_deadline":  info.CommitDeadline.Uint64(),
+		"reveal_deadline":  info.RevealDeadline.Uint64(),
+		"deposit_required": info.DepositRequired.String(),
+		"phase":            phaseNames[info.Phase],
+		"finalized":        info.Finalized,
+		"total_votes":      info.TotalVotes.Uint64(),
+	}, nil
 }
