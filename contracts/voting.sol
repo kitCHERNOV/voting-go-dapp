@@ -141,6 +141,7 @@ contract Voting {
         Proposal storage p = proposals[_proposalId];
         require(p.id != 0, "Proposal not found");
         require(p.phase == Phase.Commit, "Not in commit phase");
+        require(block.timestamp >= p.startTime, "Commit phase not started yet");
         require(block.timestamp <= p.commitDeadline, "Commit deadline passed");
         require(commitments[_proposalId][msg.sender] == bytes32(0), "Already committed");
         require(msg.value >= p.depositRequired, "Insufficient deposit");
