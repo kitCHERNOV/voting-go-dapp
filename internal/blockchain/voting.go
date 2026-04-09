@@ -31,7 +31,7 @@ var (
 
 // VotingMetaData contains all meta data concerning the Voting contract.
 var VotingMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"candidateId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"CandidateAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"}],\"name\":\"ProposalCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"winnerCandidateId\",\"type\":\"uint256\"}],\"name\":\"ProposalFinalized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"candidateId\",\"type\":\"uint256\"}],\"name\":\"VoteCast\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_name\",\"type\":\"string\"}],\"name\":\"addCandidate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"candidateCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"candidates\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"voteCount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_description\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_startDelay\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_durationSec\",\"type\":\"uint256\"}],\"name\":\"createProposal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"}],\"name\":\"finalizeProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"}],\"name\":\"getResults\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"votes\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"hasVoted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"proposalCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"proposals\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"finalized\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"totalVotes\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_candidateId\",\"type\":\"uint256\"}],\"name\":\"vote\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"candidateId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"}],\"name\":\"CandidateAdded\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"commitHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"deposit\",\"type\":\"uint256\"}],\"name\":\"CommitMade\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint8\",\"name\":\"newPhase\",\"type\":\"uint8\"}],\"name\":\"PhaseAdvanced\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"commitDeadline\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"revealDeadline\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"depositRequired\",\"type\":\"uint256\"}],\"name\":\"ProposalCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"winnerCandidateId\",\"type\":\"uint256\"}],\"name\":\"ProposalFinalized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"candidateId\",\"type\":\"uint256\"}],\"name\":\"VoteCast\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"candidateId\",\"type\":\"uint256\"}],\"name\":\"VoteRevealed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"penalty\",\"type\":\"uint256\"}],\"name\":\"VoterSlashed\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_name\",\"type\":\"string\"}],\"name\":\"addCandidate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"}],\"name\":\"advancePhase\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"candidateCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"candidates\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"voteCount\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"_commitHash\",\"type\":\"bytes32\"}],\"name\":\"commit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"commitments\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_description\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_startDelay\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_commitDuration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_revealDuration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_depositRequired\",\"type\":\"uint256\"}],\"name\":\"createProposal\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"proposalId\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"deposits\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"}],\"name\":\"finalizeProposal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"}],\"name\":\"getProposalInfo\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"commitDeadline\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"revealDeadline\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"depositRequired\",\"type\":\"uint256\"},{\"internalType\":\"uint8\",\"name\":\"phase\",\"type\":\"uint8\"},{\"internalType\":\"bool\",\"name\":\"finalized\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"totalVotes\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"}],\"name\":\"getResults\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"ids\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"votes\",\"type\":\"uint256[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"hasVoted\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"proposalCount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"proposals\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"description\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"creator\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"startTime\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"endTime\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"finalized\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"totalVotes\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"commitDeadline\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"revealDeadline\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"depositRequired\",\"type\":\"uint256\"},{\"internalType\":\"enumVoting.Phase\",\"name\":\"phase\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_candidateId\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"_salt\",\"type\":\"bytes32\"}],\"name\":\"reveal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"revealed\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_proposalId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"slashNoReveal\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"treasury\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // VotingABI is the input ABI used to generate the binding from.
@@ -261,6 +261,158 @@ func (_Voting *VotingCallerSession) Candidates(arg0 *big.Int, arg1 *big.Int) (st
 	return _Voting.Contract.Candidates(&_Voting.CallOpts, arg0, arg1)
 }
 
+// Commitments is a free data retrieval call binding the contract method 0xe90d4c06.
+//
+// Solidity: function commitments(uint256 , address ) view returns(bytes32)
+func (_Voting *VotingCaller) Commitments(opts *bind.CallOpts, arg0 *big.Int, arg1 common.Address) ([32]byte, error) {
+	var out []interface{}
+	err := _Voting.contract.Call(opts, &out, "commitments", arg0, arg1)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// Commitments is a free data retrieval call binding the contract method 0xe90d4c06.
+//
+// Solidity: function commitments(uint256 , address ) view returns(bytes32)
+func (_Voting *VotingSession) Commitments(arg0 *big.Int, arg1 common.Address) ([32]byte, error) {
+	return _Voting.Contract.Commitments(&_Voting.CallOpts, arg0, arg1)
+}
+
+// Commitments is a free data retrieval call binding the contract method 0xe90d4c06.
+//
+// Solidity: function commitments(uint256 , address ) view returns(bytes32)
+func (_Voting *VotingCallerSession) Commitments(arg0 *big.Int, arg1 common.Address) ([32]byte, error) {
+	return _Voting.Contract.Commitments(&_Voting.CallOpts, arg0, arg1)
+}
+
+// Deposits is a free data retrieval call binding the contract method 0x53a58de1.
+//
+// Solidity: function deposits(uint256 , address ) view returns(uint256)
+func (_Voting *VotingCaller) Deposits(opts *bind.CallOpts, arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Voting.contract.Call(opts, &out, "deposits", arg0, arg1)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// Deposits is a free data retrieval call binding the contract method 0x53a58de1.
+//
+// Solidity: function deposits(uint256 , address ) view returns(uint256)
+func (_Voting *VotingSession) Deposits(arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
+	return _Voting.Contract.Deposits(&_Voting.CallOpts, arg0, arg1)
+}
+
+// Deposits is a free data retrieval call binding the contract method 0x53a58de1.
+//
+// Solidity: function deposits(uint256 , address ) view returns(uint256)
+func (_Voting *VotingCallerSession) Deposits(arg0 *big.Int, arg1 common.Address) (*big.Int, error) {
+	return _Voting.Contract.Deposits(&_Voting.CallOpts, arg0, arg1)
+}
+
+// GetProposalInfo is a free data retrieval call binding the contract method 0xbc903cb8.
+//
+// Solidity: function getProposalInfo(uint256 _proposalId) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired, uint8 phase, bool finalized, uint256 totalVotes)
+func (_Voting *VotingCaller) GetProposalInfo(opts *bind.CallOpts, _proposalId *big.Int) (struct {
+	Id              *big.Int
+	Title           string
+	Description     string
+	Creator         common.Address
+	StartTime       *big.Int
+	CommitDeadline  *big.Int
+	RevealDeadline  *big.Int
+	DepositRequired *big.Int
+	Phase           uint8
+	Finalized       bool
+	TotalVotes      *big.Int
+}, error) {
+	var out []interface{}
+	err := _Voting.contract.Call(opts, &out, "getProposalInfo", _proposalId)
+
+	outstruct := new(struct {
+		Id              *big.Int
+		Title           string
+		Description     string
+		Creator         common.Address
+		StartTime       *big.Int
+		CommitDeadline  *big.Int
+		RevealDeadline  *big.Int
+		DepositRequired *big.Int
+		Phase           uint8
+		Finalized       bool
+		TotalVotes      *big.Int
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.Id = *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	outstruct.Title = *abi.ConvertType(out[1], new(string)).(*string)
+	outstruct.Description = *abi.ConvertType(out[2], new(string)).(*string)
+	outstruct.Creator = *abi.ConvertType(out[3], new(common.Address)).(*common.Address)
+	outstruct.StartTime = *abi.ConvertType(out[4], new(*big.Int)).(**big.Int)
+	outstruct.CommitDeadline = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
+	outstruct.RevealDeadline = *abi.ConvertType(out[6], new(*big.Int)).(**big.Int)
+	outstruct.DepositRequired = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.Phase = *abi.ConvertType(out[8], new(uint8)).(*uint8)
+	outstruct.Finalized = *abi.ConvertType(out[9], new(bool)).(*bool)
+	outstruct.TotalVotes = *abi.ConvertType(out[10], new(*big.Int)).(**big.Int)
+
+	return *outstruct, err
+
+}
+
+// GetProposalInfo is a free data retrieval call binding the contract method 0xbc903cb8.
+//
+// Solidity: function getProposalInfo(uint256 _proposalId) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired, uint8 phase, bool finalized, uint256 totalVotes)
+func (_Voting *VotingSession) GetProposalInfo(_proposalId *big.Int) (struct {
+	Id              *big.Int
+	Title           string
+	Description     string
+	Creator         common.Address
+	StartTime       *big.Int
+	CommitDeadline  *big.Int
+	RevealDeadline  *big.Int
+	DepositRequired *big.Int
+	Phase           uint8
+	Finalized       bool
+	TotalVotes      *big.Int
+}, error) {
+	return _Voting.Contract.GetProposalInfo(&_Voting.CallOpts, _proposalId)
+}
+
+// GetProposalInfo is a free data retrieval call binding the contract method 0xbc903cb8.
+//
+// Solidity: function getProposalInfo(uint256 _proposalId) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired, uint8 phase, bool finalized, uint256 totalVotes)
+func (_Voting *VotingCallerSession) GetProposalInfo(_proposalId *big.Int) (struct {
+	Id              *big.Int
+	Title           string
+	Description     string
+	Creator         common.Address
+	StartTime       *big.Int
+	CommitDeadline  *big.Int
+	RevealDeadline  *big.Int
+	DepositRequired *big.Int
+	Phase           uint8
+	Finalized       bool
+	TotalVotes      *big.Int
+}, error) {
+	return _Voting.Contract.GetProposalInfo(&_Voting.CallOpts, _proposalId)
+}
+
 // GetResults is a free data retrieval call binding the contract method 0x81a60c0d.
 //
 // Solidity: function getResults(uint256 _proposalId) view returns(uint256[] ids, uint256[] votes)
@@ -370,29 +522,37 @@ func (_Voting *VotingCallerSession) ProposalCount() (*big.Int, error) {
 
 // Proposals is a free data retrieval call binding the contract method 0x013cf08b.
 //
-// Solidity: function proposals(uint256 ) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 endTime, bool finalized, uint256 totalVotes)
+// Solidity: function proposals(uint256 ) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 endTime, bool finalized, uint256 totalVotes, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired, uint8 phase)
 func (_Voting *VotingCaller) Proposals(opts *bind.CallOpts, arg0 *big.Int) (struct {
-	Id          *big.Int
-	Title       string
-	Description string
-	Creator     common.Address
-	StartTime   *big.Int
-	EndTime     *big.Int
-	Finalized   bool
-	TotalVotes  *big.Int
+	Id              *big.Int
+	Title           string
+	Description     string
+	Creator         common.Address
+	StartTime       *big.Int
+	EndTime         *big.Int
+	Finalized       bool
+	TotalVotes      *big.Int
+	CommitDeadline  *big.Int
+	RevealDeadline  *big.Int
+	DepositRequired *big.Int
+	Phase           uint8
 }, error) {
 	var out []interface{}
 	err := _Voting.contract.Call(opts, &out, "proposals", arg0)
 
 	outstruct := new(struct {
-		Id          *big.Int
-		Title       string
-		Description string
-		Creator     common.Address
-		StartTime   *big.Int
-		EndTime     *big.Int
-		Finalized   bool
-		TotalVotes  *big.Int
+		Id              *big.Int
+		Title           string
+		Description     string
+		Creator         common.Address
+		StartTime       *big.Int
+		EndTime         *big.Int
+		Finalized       bool
+		TotalVotes      *big.Int
+		CommitDeadline  *big.Int
+		RevealDeadline  *big.Int
+		DepositRequired *big.Int
+		Phase           uint8
 	})
 	if err != nil {
 		return *outstruct, err
@@ -406,6 +566,10 @@ func (_Voting *VotingCaller) Proposals(opts *bind.CallOpts, arg0 *big.Int) (stru
 	outstruct.EndTime = *abi.ConvertType(out[5], new(*big.Int)).(**big.Int)
 	outstruct.Finalized = *abi.ConvertType(out[6], new(bool)).(*bool)
 	outstruct.TotalVotes = *abi.ConvertType(out[7], new(*big.Int)).(**big.Int)
+	outstruct.CommitDeadline = *abi.ConvertType(out[8], new(*big.Int)).(**big.Int)
+	outstruct.RevealDeadline = *abi.ConvertType(out[9], new(*big.Int)).(**big.Int)
+	outstruct.DepositRequired = *abi.ConvertType(out[10], new(*big.Int)).(**big.Int)
+	outstruct.Phase = *abi.ConvertType(out[11], new(uint8)).(*uint8)
 
 	return *outstruct, err
 
@@ -413,34 +577,104 @@ func (_Voting *VotingCaller) Proposals(opts *bind.CallOpts, arg0 *big.Int) (stru
 
 // Proposals is a free data retrieval call binding the contract method 0x013cf08b.
 //
-// Solidity: function proposals(uint256 ) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 endTime, bool finalized, uint256 totalVotes)
+// Solidity: function proposals(uint256 ) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 endTime, bool finalized, uint256 totalVotes, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired, uint8 phase)
 func (_Voting *VotingSession) Proposals(arg0 *big.Int) (struct {
-	Id          *big.Int
-	Title       string
-	Description string
-	Creator     common.Address
-	StartTime   *big.Int
-	EndTime     *big.Int
-	Finalized   bool
-	TotalVotes  *big.Int
+	Id              *big.Int
+	Title           string
+	Description     string
+	Creator         common.Address
+	StartTime       *big.Int
+	EndTime         *big.Int
+	Finalized       bool
+	TotalVotes      *big.Int
+	CommitDeadline  *big.Int
+	RevealDeadline  *big.Int
+	DepositRequired *big.Int
+	Phase           uint8
 }, error) {
 	return _Voting.Contract.Proposals(&_Voting.CallOpts, arg0)
 }
 
 // Proposals is a free data retrieval call binding the contract method 0x013cf08b.
 //
-// Solidity: function proposals(uint256 ) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 endTime, bool finalized, uint256 totalVotes)
+// Solidity: function proposals(uint256 ) view returns(uint256 id, string title, string description, address creator, uint256 startTime, uint256 endTime, bool finalized, uint256 totalVotes, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired, uint8 phase)
 func (_Voting *VotingCallerSession) Proposals(arg0 *big.Int) (struct {
-	Id          *big.Int
-	Title       string
-	Description string
-	Creator     common.Address
-	StartTime   *big.Int
-	EndTime     *big.Int
-	Finalized   bool
-	TotalVotes  *big.Int
+	Id              *big.Int
+	Title           string
+	Description     string
+	Creator         common.Address
+	StartTime       *big.Int
+	EndTime         *big.Int
+	Finalized       bool
+	TotalVotes      *big.Int
+	CommitDeadline  *big.Int
+	RevealDeadline  *big.Int
+	DepositRequired *big.Int
+	Phase           uint8
 }, error) {
 	return _Voting.Contract.Proposals(&_Voting.CallOpts, arg0)
+}
+
+// Revealed is a free data retrieval call binding the contract method 0xb1756996.
+//
+// Solidity: function revealed(uint256 , address ) view returns(bool)
+func (_Voting *VotingCaller) Revealed(opts *bind.CallOpts, arg0 *big.Int, arg1 common.Address) (bool, error) {
+	var out []interface{}
+	err := _Voting.contract.Call(opts, &out, "revealed", arg0, arg1)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// Revealed is a free data retrieval call binding the contract method 0xb1756996.
+//
+// Solidity: function revealed(uint256 , address ) view returns(bool)
+func (_Voting *VotingSession) Revealed(arg0 *big.Int, arg1 common.Address) (bool, error) {
+	return _Voting.Contract.Revealed(&_Voting.CallOpts, arg0, arg1)
+}
+
+// Revealed is a free data retrieval call binding the contract method 0xb1756996.
+//
+// Solidity: function revealed(uint256 , address ) view returns(bool)
+func (_Voting *VotingCallerSession) Revealed(arg0 *big.Int, arg1 common.Address) (bool, error) {
+	return _Voting.Contract.Revealed(&_Voting.CallOpts, arg0, arg1)
+}
+
+// Treasury is a free data retrieval call binding the contract method 0x4c5430a0.
+//
+// Solidity: function treasury(uint256 ) view returns(uint256)
+func (_Voting *VotingCaller) Treasury(opts *bind.CallOpts, arg0 *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _Voting.contract.Call(opts, &out, "treasury", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// Treasury is a free data retrieval call binding the contract method 0x4c5430a0.
+//
+// Solidity: function treasury(uint256 ) view returns(uint256)
+func (_Voting *VotingSession) Treasury(arg0 *big.Int) (*big.Int, error) {
+	return _Voting.Contract.Treasury(&_Voting.CallOpts, arg0)
+}
+
+// Treasury is a free data retrieval call binding the contract method 0x4c5430a0.
+//
+// Solidity: function treasury(uint256 ) view returns(uint256)
+func (_Voting *VotingCallerSession) Treasury(arg0 *big.Int) (*big.Int, error) {
+	return _Voting.Contract.Treasury(&_Voting.CallOpts, arg0)
 }
 
 // AddCandidate is a paid mutator transaction binding the contract method 0x1750a3d0.
@@ -464,25 +698,67 @@ func (_Voting *VotingTransactorSession) AddCandidate(_proposalId *big.Int, _name
 	return _Voting.Contract.AddCandidate(&_Voting.TransactOpts, _proposalId, _name)
 }
 
-// CreateProposal is a paid mutator transaction binding the contract method 0x6b5e1766.
+// AdvancePhase is a paid mutator transaction binding the contract method 0x81aaf4ce.
 //
-// Solidity: function createProposal(string _title, string _description, uint256 _startDelay, uint256 _durationSec) returns(uint256 proposalId)
-func (_Voting *VotingTransactor) CreateProposal(opts *bind.TransactOpts, _title string, _description string, _startDelay *big.Int, _durationSec *big.Int) (*types.Transaction, error) {
-	return _Voting.contract.Transact(opts, "createProposal", _title, _description, _startDelay, _durationSec)
+// Solidity: function advancePhase(uint256 _proposalId) returns()
+func (_Voting *VotingTransactor) AdvancePhase(opts *bind.TransactOpts, _proposalId *big.Int) (*types.Transaction, error) {
+	return _Voting.contract.Transact(opts, "advancePhase", _proposalId)
 }
 
-// CreateProposal is a paid mutator transaction binding the contract method 0x6b5e1766.
+// AdvancePhase is a paid mutator transaction binding the contract method 0x81aaf4ce.
 //
-// Solidity: function createProposal(string _title, string _description, uint256 _startDelay, uint256 _durationSec) returns(uint256 proposalId)
-func (_Voting *VotingSession) CreateProposal(_title string, _description string, _startDelay *big.Int, _durationSec *big.Int) (*types.Transaction, error) {
-	return _Voting.Contract.CreateProposal(&_Voting.TransactOpts, _title, _description, _startDelay, _durationSec)
+// Solidity: function advancePhase(uint256 _proposalId) returns()
+func (_Voting *VotingSession) AdvancePhase(_proposalId *big.Int) (*types.Transaction, error) {
+	return _Voting.Contract.AdvancePhase(&_Voting.TransactOpts, _proposalId)
 }
 
-// CreateProposal is a paid mutator transaction binding the contract method 0x6b5e1766.
+// AdvancePhase is a paid mutator transaction binding the contract method 0x81aaf4ce.
 //
-// Solidity: function createProposal(string _title, string _description, uint256 _startDelay, uint256 _durationSec) returns(uint256 proposalId)
-func (_Voting *VotingTransactorSession) CreateProposal(_title string, _description string, _startDelay *big.Int, _durationSec *big.Int) (*types.Transaction, error) {
-	return _Voting.Contract.CreateProposal(&_Voting.TransactOpts, _title, _description, _startDelay, _durationSec)
+// Solidity: function advancePhase(uint256 _proposalId) returns()
+func (_Voting *VotingTransactorSession) AdvancePhase(_proposalId *big.Int) (*types.Transaction, error) {
+	return _Voting.Contract.AdvancePhase(&_Voting.TransactOpts, _proposalId)
+}
+
+// Commit is a paid mutator transaction binding the contract method 0xf2f03877.
+//
+// Solidity: function commit(uint256 _proposalId, bytes32 _commitHash) payable returns()
+func (_Voting *VotingTransactor) Commit(opts *bind.TransactOpts, _proposalId *big.Int, _commitHash [32]byte) (*types.Transaction, error) {
+	return _Voting.contract.Transact(opts, "commit", _proposalId, _commitHash)
+}
+
+// Commit is a paid mutator transaction binding the contract method 0xf2f03877.
+//
+// Solidity: function commit(uint256 _proposalId, bytes32 _commitHash) payable returns()
+func (_Voting *VotingSession) Commit(_proposalId *big.Int, _commitHash [32]byte) (*types.Transaction, error) {
+	return _Voting.Contract.Commit(&_Voting.TransactOpts, _proposalId, _commitHash)
+}
+
+// Commit is a paid mutator transaction binding the contract method 0xf2f03877.
+//
+// Solidity: function commit(uint256 _proposalId, bytes32 _commitHash) payable returns()
+func (_Voting *VotingTransactorSession) Commit(_proposalId *big.Int, _commitHash [32]byte) (*types.Transaction, error) {
+	return _Voting.Contract.Commit(&_Voting.TransactOpts, _proposalId, _commitHash)
+}
+
+// CreateProposal is a paid mutator transaction binding the contract method 0xd08f6df8.
+//
+// Solidity: function createProposal(string _title, string _description, uint256 _startDelay, uint256 _commitDuration, uint256 _revealDuration, uint256 _depositRequired) returns(uint256 proposalId)
+func (_Voting *VotingTransactor) CreateProposal(opts *bind.TransactOpts, _title string, _description string, _startDelay *big.Int, _commitDuration *big.Int, _revealDuration *big.Int, _depositRequired *big.Int) (*types.Transaction, error) {
+	return _Voting.contract.Transact(opts, "createProposal", _title, _description, _startDelay, _commitDuration, _revealDuration, _depositRequired)
+}
+
+// CreateProposal is a paid mutator transaction binding the contract method 0xd08f6df8.
+//
+// Solidity: function createProposal(string _title, string _description, uint256 _startDelay, uint256 _commitDuration, uint256 _revealDuration, uint256 _depositRequired) returns(uint256 proposalId)
+func (_Voting *VotingSession) CreateProposal(_title string, _description string, _startDelay *big.Int, _commitDuration *big.Int, _revealDuration *big.Int, _depositRequired *big.Int) (*types.Transaction, error) {
+	return _Voting.Contract.CreateProposal(&_Voting.TransactOpts, _title, _description, _startDelay, _commitDuration, _revealDuration, _depositRequired)
+}
+
+// CreateProposal is a paid mutator transaction binding the contract method 0xd08f6df8.
+//
+// Solidity: function createProposal(string _title, string _description, uint256 _startDelay, uint256 _commitDuration, uint256 _revealDuration, uint256 _depositRequired) returns(uint256 proposalId)
+func (_Voting *VotingTransactorSession) CreateProposal(_title string, _description string, _startDelay *big.Int, _commitDuration *big.Int, _revealDuration *big.Int, _depositRequired *big.Int) (*types.Transaction, error) {
+	return _Voting.Contract.CreateProposal(&_Voting.TransactOpts, _title, _description, _startDelay, _commitDuration, _revealDuration, _depositRequired)
 }
 
 // FinalizeProposal is a paid mutator transaction binding the contract method 0x5652077c.
@@ -506,25 +782,46 @@ func (_Voting *VotingTransactorSession) FinalizeProposal(_proposalId *big.Int) (
 	return _Voting.Contract.FinalizeProposal(&_Voting.TransactOpts, _proposalId)
 }
 
-// Vote is a paid mutator transaction binding the contract method 0xb384abef.
+// Reveal is a paid mutator transaction binding the contract method 0x61d49ea8.
 //
-// Solidity: function vote(uint256 _proposalId, uint256 _candidateId) returns()
-func (_Voting *VotingTransactor) Vote(opts *bind.TransactOpts, _proposalId *big.Int, _candidateId *big.Int) (*types.Transaction, error) {
-	return _Voting.contract.Transact(opts, "vote", _proposalId, _candidateId)
+// Solidity: function reveal(uint256 _proposalId, uint256 _candidateId, bytes32 _salt) returns()
+func (_Voting *VotingTransactor) Reveal(opts *bind.TransactOpts, _proposalId *big.Int, _candidateId *big.Int, _salt [32]byte) (*types.Transaction, error) {
+	return _Voting.contract.Transact(opts, "reveal", _proposalId, _candidateId, _salt)
 }
 
-// Vote is a paid mutator transaction binding the contract method 0xb384abef.
+// Reveal is a paid mutator transaction binding the contract method 0x61d49ea8.
 //
-// Solidity: function vote(uint256 _proposalId, uint256 _candidateId) returns()
-func (_Voting *VotingSession) Vote(_proposalId *big.Int, _candidateId *big.Int) (*types.Transaction, error) {
-	return _Voting.Contract.Vote(&_Voting.TransactOpts, _proposalId, _candidateId)
+// Solidity: function reveal(uint256 _proposalId, uint256 _candidateId, bytes32 _salt) returns()
+func (_Voting *VotingSession) Reveal(_proposalId *big.Int, _candidateId *big.Int, _salt [32]byte) (*types.Transaction, error) {
+	return _Voting.Contract.Reveal(&_Voting.TransactOpts, _proposalId, _candidateId, _salt)
 }
 
-// Vote is a paid mutator transaction binding the contract method 0xb384abef.
+// Reveal is a paid mutator transaction binding the contract method 0x61d49ea8.
 //
-// Solidity: function vote(uint256 _proposalId, uint256 _candidateId) returns()
-func (_Voting *VotingTransactorSession) Vote(_proposalId *big.Int, _candidateId *big.Int) (*types.Transaction, error) {
-	return _Voting.Contract.Vote(&_Voting.TransactOpts, _proposalId, _candidateId)
+// Solidity: function reveal(uint256 _proposalId, uint256 _candidateId, bytes32 _salt) returns()
+func (_Voting *VotingTransactorSession) Reveal(_proposalId *big.Int, _candidateId *big.Int, _salt [32]byte) (*types.Transaction, error) {
+	return _Voting.Contract.Reveal(&_Voting.TransactOpts, _proposalId, _candidateId, _salt)
+}
+
+// SlashNoReveal is a paid mutator transaction binding the contract method 0xc74e9872.
+//
+// Solidity: function slashNoReveal(uint256 _proposalId, address _voter) returns()
+func (_Voting *VotingTransactor) SlashNoReveal(opts *bind.TransactOpts, _proposalId *big.Int, _voter common.Address) (*types.Transaction, error) {
+	return _Voting.contract.Transact(opts, "slashNoReveal", _proposalId, _voter)
+}
+
+// SlashNoReveal is a paid mutator transaction binding the contract method 0xc74e9872.
+//
+// Solidity: function slashNoReveal(uint256 _proposalId, address _voter) returns()
+func (_Voting *VotingSession) SlashNoReveal(_proposalId *big.Int, _voter common.Address) (*types.Transaction, error) {
+	return _Voting.Contract.SlashNoReveal(&_Voting.TransactOpts, _proposalId, _voter)
+}
+
+// SlashNoReveal is a paid mutator transaction binding the contract method 0xc74e9872.
+//
+// Solidity: function slashNoReveal(uint256 _proposalId, address _voter) returns()
+func (_Voting *VotingTransactorSession) SlashNoReveal(_proposalId *big.Int, _voter common.Address) (*types.Transaction, error) {
+	return _Voting.Contract.SlashNoReveal(&_Voting.TransactOpts, _proposalId, _voter)
 }
 
 // VotingCandidateAddedIterator is returned from FilterCandidateAdded and is used to iterate over the raw logs and unpacked data for CandidateAdded events raised by the Voting contract.
@@ -681,6 +978,306 @@ func (_Voting *VotingFilterer) ParseCandidateAdded(log types.Log) (*VotingCandid
 	return event, nil
 }
 
+// VotingCommitMadeIterator is returned from FilterCommitMade and is used to iterate over the raw logs and unpacked data for CommitMade events raised by the Voting contract.
+type VotingCommitMadeIterator struct {
+	Event *VotingCommitMade // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *VotingCommitMadeIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(VotingCommitMade)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(VotingCommitMade)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *VotingCommitMadeIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *VotingCommitMadeIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// VotingCommitMade represents a CommitMade event raised by the Voting contract.
+type VotingCommitMade struct {
+	ProposalId *big.Int
+	Voter      common.Address
+	CommitHash [32]byte
+	Deposit    *big.Int
+	Raw        types.Log // Blockchain specific contextual infos
+}
+
+// FilterCommitMade is a free log retrieval operation binding the contract event 0x2db8a43b7122b2f5ceab6fc6d9e777c5074c0d8db1ed71a3a5890dc1feb15651.
+//
+// Solidity: event CommitMade(uint256 indexed proposalId, address indexed voter, bytes32 commitHash, uint256 deposit)
+func (_Voting *VotingFilterer) FilterCommitMade(opts *bind.FilterOpts, proposalId []*big.Int, voter []common.Address) (*VotingCommitMadeIterator, error) {
+
+	var proposalIdRule []interface{}
+	for _, proposalIdItem := range proposalId {
+		proposalIdRule = append(proposalIdRule, proposalIdItem)
+	}
+	var voterRule []interface{}
+	for _, voterItem := range voter {
+		voterRule = append(voterRule, voterItem)
+	}
+
+	logs, sub, err := _Voting.contract.FilterLogs(opts, "CommitMade", proposalIdRule, voterRule)
+	if err != nil {
+		return nil, err
+	}
+	return &VotingCommitMadeIterator{contract: _Voting.contract, event: "CommitMade", logs: logs, sub: sub}, nil
+}
+
+// WatchCommitMade is a free log subscription operation binding the contract event 0x2db8a43b7122b2f5ceab6fc6d9e777c5074c0d8db1ed71a3a5890dc1feb15651.
+//
+// Solidity: event CommitMade(uint256 indexed proposalId, address indexed voter, bytes32 commitHash, uint256 deposit)
+func (_Voting *VotingFilterer) WatchCommitMade(opts *bind.WatchOpts, sink chan<- *VotingCommitMade, proposalId []*big.Int, voter []common.Address) (event.Subscription, error) {
+
+	var proposalIdRule []interface{}
+	for _, proposalIdItem := range proposalId {
+		proposalIdRule = append(proposalIdRule, proposalIdItem)
+	}
+	var voterRule []interface{}
+	for _, voterItem := range voter {
+		voterRule = append(voterRule, voterItem)
+	}
+
+	logs, sub, err := _Voting.contract.WatchLogs(opts, "CommitMade", proposalIdRule, voterRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(VotingCommitMade)
+				if err := _Voting.contract.UnpackLog(event, "CommitMade", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseCommitMade is a log parse operation binding the contract event 0x2db8a43b7122b2f5ceab6fc6d9e777c5074c0d8db1ed71a3a5890dc1feb15651.
+//
+// Solidity: event CommitMade(uint256 indexed proposalId, address indexed voter, bytes32 commitHash, uint256 deposit)
+func (_Voting *VotingFilterer) ParseCommitMade(log types.Log) (*VotingCommitMade, error) {
+	event := new(VotingCommitMade)
+	if err := _Voting.contract.UnpackLog(event, "CommitMade", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// VotingPhaseAdvancedIterator is returned from FilterPhaseAdvanced and is used to iterate over the raw logs and unpacked data for PhaseAdvanced events raised by the Voting contract.
+type VotingPhaseAdvancedIterator struct {
+	Event *VotingPhaseAdvanced // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *VotingPhaseAdvancedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(VotingPhaseAdvanced)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(VotingPhaseAdvanced)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *VotingPhaseAdvancedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *VotingPhaseAdvancedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// VotingPhaseAdvanced represents a PhaseAdvanced event raised by the Voting contract.
+type VotingPhaseAdvanced struct {
+	ProposalId *big.Int
+	NewPhase   uint8
+	Raw        types.Log // Blockchain specific contextual infos
+}
+
+// FilterPhaseAdvanced is a free log retrieval operation binding the contract event 0xa92c850bb09d5afa4a6230f4866fad10264c6fea20047156b39e3e24c5763ad4.
+//
+// Solidity: event PhaseAdvanced(uint256 indexed proposalId, uint8 newPhase)
+func (_Voting *VotingFilterer) FilterPhaseAdvanced(opts *bind.FilterOpts, proposalId []*big.Int) (*VotingPhaseAdvancedIterator, error) {
+
+	var proposalIdRule []interface{}
+	for _, proposalIdItem := range proposalId {
+		proposalIdRule = append(proposalIdRule, proposalIdItem)
+	}
+
+	logs, sub, err := _Voting.contract.FilterLogs(opts, "PhaseAdvanced", proposalIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return &VotingPhaseAdvancedIterator{contract: _Voting.contract, event: "PhaseAdvanced", logs: logs, sub: sub}, nil
+}
+
+// WatchPhaseAdvanced is a free log subscription operation binding the contract event 0xa92c850bb09d5afa4a6230f4866fad10264c6fea20047156b39e3e24c5763ad4.
+//
+// Solidity: event PhaseAdvanced(uint256 indexed proposalId, uint8 newPhase)
+func (_Voting *VotingFilterer) WatchPhaseAdvanced(opts *bind.WatchOpts, sink chan<- *VotingPhaseAdvanced, proposalId []*big.Int) (event.Subscription, error) {
+
+	var proposalIdRule []interface{}
+	for _, proposalIdItem := range proposalId {
+		proposalIdRule = append(proposalIdRule, proposalIdItem)
+	}
+
+	logs, sub, err := _Voting.contract.WatchLogs(opts, "PhaseAdvanced", proposalIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(VotingPhaseAdvanced)
+				if err := _Voting.contract.UnpackLog(event, "PhaseAdvanced", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParsePhaseAdvanced is a log parse operation binding the contract event 0xa92c850bb09d5afa4a6230f4866fad10264c6fea20047156b39e3e24c5763ad4.
+//
+// Solidity: event PhaseAdvanced(uint256 indexed proposalId, uint8 newPhase)
+func (_Voting *VotingFilterer) ParsePhaseAdvanced(log types.Log) (*VotingPhaseAdvanced, error) {
+	event := new(VotingPhaseAdvanced)
+	if err := _Voting.contract.UnpackLog(event, "PhaseAdvanced", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
 // VotingProposalCreatedIterator is returned from FilterProposalCreated and is used to iterate over the raw logs and unpacked data for ProposalCreated events raised by the Voting contract.
 type VotingProposalCreatedIterator struct {
 	Event *VotingProposalCreated // Event containing the contract specifics and raw log
@@ -750,17 +1347,19 @@ func (it *VotingProposalCreatedIterator) Close() error {
 
 // VotingProposalCreated represents a ProposalCreated event raised by the Voting contract.
 type VotingProposalCreated struct {
-	ProposalId *big.Int
-	Title      string
-	Creator    common.Address
-	StartTime  *big.Int
-	EndTime    *big.Int
-	Raw        types.Log // Blockchain specific contextual infos
+	ProposalId      *big.Int
+	Title           string
+	Creator         common.Address
+	StartTime       *big.Int
+	CommitDeadline  *big.Int
+	RevealDeadline  *big.Int
+	DepositRequired *big.Int
+	Raw             types.Log // Blockchain specific contextual infos
 }
 
-// FilterProposalCreated is a free log retrieval operation binding the contract event 0x331b791e5a0526c6d6f17a46c1d4139542c8579c245d9f8082d0b1462942f4fa.
+// FilterProposalCreated is a free log retrieval operation binding the contract event 0x8afa33bc2bef7fe5ecef5bee8e569cfbeb5a58e98a1be06081730c1730e86b46.
 //
-// Solidity: event ProposalCreated(uint256 indexed proposalId, string title, address indexed creator, uint256 startTime, uint256 endTime)
+// Solidity: event ProposalCreated(uint256 indexed proposalId, string title, address indexed creator, uint256 startTime, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired)
 func (_Voting *VotingFilterer) FilterProposalCreated(opts *bind.FilterOpts, proposalId []*big.Int, creator []common.Address) (*VotingProposalCreatedIterator, error) {
 
 	var proposalIdRule []interface{}
@@ -780,9 +1379,9 @@ func (_Voting *VotingFilterer) FilterProposalCreated(opts *bind.FilterOpts, prop
 	return &VotingProposalCreatedIterator{contract: _Voting.contract, event: "ProposalCreated", logs: logs, sub: sub}, nil
 }
 
-// WatchProposalCreated is a free log subscription operation binding the contract event 0x331b791e5a0526c6d6f17a46c1d4139542c8579c245d9f8082d0b1462942f4fa.
+// WatchProposalCreated is a free log subscription operation binding the contract event 0x8afa33bc2bef7fe5ecef5bee8e569cfbeb5a58e98a1be06081730c1730e86b46.
 //
-// Solidity: event ProposalCreated(uint256 indexed proposalId, string title, address indexed creator, uint256 startTime, uint256 endTime)
+// Solidity: event ProposalCreated(uint256 indexed proposalId, string title, address indexed creator, uint256 startTime, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired)
 func (_Voting *VotingFilterer) WatchProposalCreated(opts *bind.WatchOpts, sink chan<- *VotingProposalCreated, proposalId []*big.Int, creator []common.Address) (event.Subscription, error) {
 
 	var proposalIdRule []interface{}
@@ -827,9 +1426,9 @@ func (_Voting *VotingFilterer) WatchProposalCreated(opts *bind.WatchOpts, sink c
 	}), nil
 }
 
-// ParseProposalCreated is a log parse operation binding the contract event 0x331b791e5a0526c6d6f17a46c1d4139542c8579c245d9f8082d0b1462942f4fa.
+// ParseProposalCreated is a log parse operation binding the contract event 0x8afa33bc2bef7fe5ecef5bee8e569cfbeb5a58e98a1be06081730c1730e86b46.
 //
-// Solidity: event ProposalCreated(uint256 indexed proposalId, string title, address indexed creator, uint256 startTime, uint256 endTime)
+// Solidity: event ProposalCreated(uint256 indexed proposalId, string title, address indexed creator, uint256 startTime, uint256 commitDeadline, uint256 revealDeadline, uint256 depositRequired)
 func (_Voting *VotingFilterer) ParseProposalCreated(log types.Log) (*VotingProposalCreated, error) {
 	event := new(VotingProposalCreated)
 	if err := _Voting.contract.UnpackLog(event, "ProposalCreated", log); err != nil {
@@ -1140,6 +1739,322 @@ func (_Voting *VotingFilterer) WatchVoteCast(opts *bind.WatchOpts, sink chan<- *
 func (_Voting *VotingFilterer) ParseVoteCast(log types.Log) (*VotingVoteCast, error) {
 	event := new(VotingVoteCast)
 	if err := _Voting.contract.UnpackLog(event, "VoteCast", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// VotingVoteRevealedIterator is returned from FilterVoteRevealed and is used to iterate over the raw logs and unpacked data for VoteRevealed events raised by the Voting contract.
+type VotingVoteRevealedIterator struct {
+	Event *VotingVoteRevealed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *VotingVoteRevealedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(VotingVoteRevealed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(VotingVoteRevealed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *VotingVoteRevealedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *VotingVoteRevealedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// VotingVoteRevealed represents a VoteRevealed event raised by the Voting contract.
+type VotingVoteRevealed struct {
+	ProposalId  *big.Int
+	Voter       common.Address
+	CandidateId *big.Int
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterVoteRevealed is a free log retrieval operation binding the contract event 0xd5232b050e3221ade5a3653733191681ef3bde39c4530d87c9bb74004f99dadc.
+//
+// Solidity: event VoteRevealed(uint256 indexed proposalId, address indexed voter, uint256 indexed candidateId)
+func (_Voting *VotingFilterer) FilterVoteRevealed(opts *bind.FilterOpts, proposalId []*big.Int, voter []common.Address, candidateId []*big.Int) (*VotingVoteRevealedIterator, error) {
+
+	var proposalIdRule []interface{}
+	for _, proposalIdItem := range proposalId {
+		proposalIdRule = append(proposalIdRule, proposalIdItem)
+	}
+	var voterRule []interface{}
+	for _, voterItem := range voter {
+		voterRule = append(voterRule, voterItem)
+	}
+	var candidateIdRule []interface{}
+	for _, candidateIdItem := range candidateId {
+		candidateIdRule = append(candidateIdRule, candidateIdItem)
+	}
+
+	logs, sub, err := _Voting.contract.FilterLogs(opts, "VoteRevealed", proposalIdRule, voterRule, candidateIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return &VotingVoteRevealedIterator{contract: _Voting.contract, event: "VoteRevealed", logs: logs, sub: sub}, nil
+}
+
+// WatchVoteRevealed is a free log subscription operation binding the contract event 0xd5232b050e3221ade5a3653733191681ef3bde39c4530d87c9bb74004f99dadc.
+//
+// Solidity: event VoteRevealed(uint256 indexed proposalId, address indexed voter, uint256 indexed candidateId)
+func (_Voting *VotingFilterer) WatchVoteRevealed(opts *bind.WatchOpts, sink chan<- *VotingVoteRevealed, proposalId []*big.Int, voter []common.Address, candidateId []*big.Int) (event.Subscription, error) {
+
+	var proposalIdRule []interface{}
+	for _, proposalIdItem := range proposalId {
+		proposalIdRule = append(proposalIdRule, proposalIdItem)
+	}
+	var voterRule []interface{}
+	for _, voterItem := range voter {
+		voterRule = append(voterRule, voterItem)
+	}
+	var candidateIdRule []interface{}
+	for _, candidateIdItem := range candidateId {
+		candidateIdRule = append(candidateIdRule, candidateIdItem)
+	}
+
+	logs, sub, err := _Voting.contract.WatchLogs(opts, "VoteRevealed", proposalIdRule, voterRule, candidateIdRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(VotingVoteRevealed)
+				if err := _Voting.contract.UnpackLog(event, "VoteRevealed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseVoteRevealed is a log parse operation binding the contract event 0xd5232b050e3221ade5a3653733191681ef3bde39c4530d87c9bb74004f99dadc.
+//
+// Solidity: event VoteRevealed(uint256 indexed proposalId, address indexed voter, uint256 indexed candidateId)
+func (_Voting *VotingFilterer) ParseVoteRevealed(log types.Log) (*VotingVoteRevealed, error) {
+	event := new(VotingVoteRevealed)
+	if err := _Voting.contract.UnpackLog(event, "VoteRevealed", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// VotingVoterSlashedIterator is returned from FilterVoterSlashed and is used to iterate over the raw logs and unpacked data for VoterSlashed events raised by the Voting contract.
+type VotingVoterSlashedIterator struct {
+	Event *VotingVoterSlashed // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *VotingVoterSlashedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(VotingVoterSlashed)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(VotingVoterSlashed)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *VotingVoterSlashedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *VotingVoterSlashedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// VotingVoterSlashed represents a VoterSlashed event raised by the Voting contract.
+type VotingVoterSlashed struct {
+	ProposalId *big.Int
+	Voter      common.Address
+	Penalty    *big.Int
+	Raw        types.Log // Blockchain specific contextual infos
+}
+
+// FilterVoterSlashed is a free log retrieval operation binding the contract event 0xdc7d4dc575d7a3f34c69cdc55338c8ac5ca6db891b910b674ee5f9fcd717dc9f.
+//
+// Solidity: event VoterSlashed(uint256 indexed proposalId, address indexed voter, uint256 penalty)
+func (_Voting *VotingFilterer) FilterVoterSlashed(opts *bind.FilterOpts, proposalId []*big.Int, voter []common.Address) (*VotingVoterSlashedIterator, error) {
+
+	var proposalIdRule []interface{}
+	for _, proposalIdItem := range proposalId {
+		proposalIdRule = append(proposalIdRule, proposalIdItem)
+	}
+	var voterRule []interface{}
+	for _, voterItem := range voter {
+		voterRule = append(voterRule, voterItem)
+	}
+
+	logs, sub, err := _Voting.contract.FilterLogs(opts, "VoterSlashed", proposalIdRule, voterRule)
+	if err != nil {
+		return nil, err
+	}
+	return &VotingVoterSlashedIterator{contract: _Voting.contract, event: "VoterSlashed", logs: logs, sub: sub}, nil
+}
+
+// WatchVoterSlashed is a free log subscription operation binding the contract event 0xdc7d4dc575d7a3f34c69cdc55338c8ac5ca6db891b910b674ee5f9fcd717dc9f.
+//
+// Solidity: event VoterSlashed(uint256 indexed proposalId, address indexed voter, uint256 penalty)
+func (_Voting *VotingFilterer) WatchVoterSlashed(opts *bind.WatchOpts, sink chan<- *VotingVoterSlashed, proposalId []*big.Int, voter []common.Address) (event.Subscription, error) {
+
+	var proposalIdRule []interface{}
+	for _, proposalIdItem := range proposalId {
+		proposalIdRule = append(proposalIdRule, proposalIdItem)
+	}
+	var voterRule []interface{}
+	for _, voterItem := range voter {
+		voterRule = append(voterRule, voterItem)
+	}
+
+	logs, sub, err := _Voting.contract.WatchLogs(opts, "VoterSlashed", proposalIdRule, voterRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(VotingVoterSlashed)
+				if err := _Voting.contract.UnpackLog(event, "VoterSlashed", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseVoterSlashed is a log parse operation binding the contract event 0xdc7d4dc575d7a3f34c69cdc55338c8ac5ca6db891b910b674ee5f9fcd717dc9f.
+//
+// Solidity: event VoterSlashed(uint256 indexed proposalId, address indexed voter, uint256 penalty)
+func (_Voting *VotingFilterer) ParseVoterSlashed(log types.Log) (*VotingVoterSlashed, error) {
+	event := new(VotingVoterSlashed)
+	if err := _Voting.contract.UnpackLog(event, "VoterSlashed", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

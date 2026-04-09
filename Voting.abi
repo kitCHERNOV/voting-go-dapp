@@ -34,6 +34,56 @@
         "type": "uint256"
       },
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "commitHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "deposit",
+        "type": "uint256"
+      }
+    ],
+    "name": "CommitMade",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
+        "name": "newPhase",
+        "type": "uint8"
+      }
+    ],
+    "name": "PhaseAdvanced",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
         "indexed": false,
         "internalType": "string",
         "name": "title",
@@ -54,7 +104,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "endTime",
+        "name": "commitDeadline",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "revealDeadline",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "depositRequired",
         "type": "uint256"
       }
     ],
@@ -106,6 +168,56 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "candidateId",
+        "type": "uint256"
+      }
+    ],
+    "name": "VoteRevealed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "proposalId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "penalty",
+        "type": "uint256"
+      }
+    ],
+    "name": "VoterSlashed",
+    "type": "event"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -119,6 +231,19 @@
       }
     ],
     "name": "addCandidate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "advancePhase",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -179,6 +304,48 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_commitHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "commit",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "commitments",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "_title",
         "type": "string"
@@ -195,7 +362,17 @@
       },
       {
         "internalType": "uint256",
-        "name": "_durationSec",
+        "name": "_commitDuration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_revealDuration",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_depositRequired",
         "type": "uint256"
       }
     ],
@@ -214,6 +391,30 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "deposits",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_proposalId",
         "type": "uint256"
       }
@@ -221,6 +422,75 @@
     "name": "finalizeProposal",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getProposalInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "title",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "description",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "startTime",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "commitDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "revealDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "depositRequired",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "phase",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bool",
+        "name": "finalized",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalVotes",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -333,6 +603,26 @@
         "internalType": "uint256",
         "name": "totalVotes",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "commitDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "revealDeadline",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "depositRequired",
+        "type": "uint256"
+      },
+      {
+        "internalType": "enum Voting.Phase",
+        "name": "phase",
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -349,11 +639,77 @@
         "internalType": "uint256",
         "name": "_candidateId",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "_salt",
+        "type": "bytes32"
       }
     ],
-    "name": "vote",
+    "name": "reveal",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "revealed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_proposalId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_voter",
+        "type": "address"
+      }
+    ],
+    "name": "slashNoReveal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "treasury",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]
