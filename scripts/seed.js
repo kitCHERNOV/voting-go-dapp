@@ -6,11 +6,24 @@ async function main() {
   const voting = await ethers.getContractAt("Voting", address);
 
   // Создаём голосование: старт через 61 сек, длительность 2 часа
+  // const tx = await voting.createProposal(
+  //   "Лучший язык программирования",
+  //   "Голосуем за лучший язык 2024",
+  //   61,
+  //   7200
+  // );
+
+  // Создаём голосование Stage 2:
+  // startDelay=61с, commitDuration=7200с (2ч), revealDuration=3600с (1ч)
+  const depositRequired = ethers.parseEther("0.001");
+
   const tx = await voting.createProposal(
     "Лучший язык программирования",
     "Голосуем за лучший язык 2024",
     61,
-    7200
+    7200,
+    3600,
+    depositRequired
   );
   const receipt = await tx.wait();
 
@@ -33,6 +46,7 @@ async function main() {
   console.log("Added: Python");
 
   console.log("Done! Proposal ID:", proposalId.toString());
+  console.log("Deposit required:", ethers.formatEther(depositRequired), "ETH");
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
