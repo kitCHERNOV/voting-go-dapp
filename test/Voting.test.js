@@ -172,6 +172,21 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       await increaseTime(62);
     });
 
+    it("отклоняет commit до начала commit фазы (startTime не наступил)", async function () {
+      // Создаём новый proposal без сдвига времени из beforeEach
+      // beforeEach уже сдвинул время на 62 сек, поэтому
+      // создаём новый proposal у которого startDelay большой
+      const newId = await createProposal(3600, 300, 300); // startDelay = 1 час
+      await voting.addCandidate(newId, "Go");
+
+      const commitHash = ethers.ZeroHash;
+
+      // Время ещё не дошло до startTime нового proposal
+      await expect(
+        voting.connect(voter1).commit(newId, commitHash, { value: deposit })
+      ).to.be.revertedWith("Commit phase not started yet");
+    });
+
     it("принимает корректный commit с депозитом", async function () {
       const candidateId = 1;
       const salt = ethers.randomBytes(32);
@@ -668,7 +683,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       expect(proposal.totalVotes).to.equal(3n);
     });
 
-    it("ничья: ProposalFinalized эмитит winnerId=0", async function () {
+    it("ничья: ProposalFinalized эмитит первого кандидата с max голосами", async function () {
       const deposit = ethers.parseEther("0.001");
       const proposalId = await createProposal(61, 300, 300);
       await voting.addCandidate(proposalId, "Go");
@@ -694,7 +709,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       const tx = await voting.advancePhase(proposalId); // Reveal -> Finalized
       await expect(tx)
         .to.emit(voting, "ProposalFinalized")
-        .withArgs(proposalId, 0n);
+        .withArgs(proposalId, 1n);
 
       const proposal = await voting.proposals(proposalId);
       expect(proposal.finalized).to.equal(true);
