@@ -32,7 +32,7 @@ abi:
 
 ## Сгенерировать Go-биндинг из ABI
 gen:
-	abigen --abi=Voting.abi --pkg=blockchain --type=Voting --out=internal/blockchain/voting.go
+	/home/kita/go/bin/abigen --abi=Voting.abi --pkg=blockchain --type=Voting --out=internal/blockchain/voting.go
 
 ## Полный цикл: компиляция + ABI + биндинг
 build-contract: compile abi gen
