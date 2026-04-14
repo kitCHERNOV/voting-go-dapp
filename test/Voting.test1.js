@@ -1,18 +1,19 @@
-const { expect } = require("chai");
+﻿const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 
 describe("Voting - Stage 2: Commit-Reveal", function () {
   let voting;
+  let registry;
   let owner, voter1, voter2, voter3;
 
-  // Вспомогательная функция — сдвигает время ноды вперёд
+  // Вспомогательная функция: сдвигает время ноды вперед
   async function increaseTime(seconds) {
     await ethers.provider.send("evm_increaseTime", [seconds]);
     await ethers.provider.send("evm_mine");
   }
 
-  // Вспомогательная функция — создаёт голосование Stage 2 и возвращает его ID
+  // Вспомогательная функция: создает голосование Stage 2 и возвращает его ID
   // Параметры по умолчанию: startDelay=61с, commit=300с, reveal=300с, deposit=0.001 ETH
   async function createProposal(startDelay = 61, commitDuration = 300, revealDuration = 300) {
     const deposit = ethers.parseEther("0.001");
@@ -37,17 +38,36 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     );
   }
 
+  // beforeEach(async function () {
+  //   [owner, voter1, voter2, voter3] = await ethers.getSigners();
+  //   const Voting = await ethers.getContractFactory("Voting");
+  //   voting = await Voting.deploy();
+  //   await voting.waitForDeployment();
+  // });
+
   beforeEach(async function () {
     [owner, voter1, voter2, voter3] = await ethers.getSigners();
+
+    // Stage 3: сначала деплоим реестр
+    const VoterRegistry = await ethers.getContractFactory("VoterRegistry");
+    registry = await VoterRegistry.deploy([owner.address]);
+    await registry.waitForDeployment();
+
+    // Voting теперь принимает адрес реестра
     const Voting = await ethers.getContractFactory("Voting");
-    voting = await Voting.deploy();
+    voting = await Voting.deploy(await registry.getAddress());
     await voting.waitForDeployment();
-  });
 
-  // ─── createProposal (Stage 2) ──────────────────────────────────────────
+    // Регистрируем тестовых участников
+    await registry.register(voter1.address);
+    await registry.register(voter2.address);
+    await registry.register(voter3.address);
+});
+
+
+  // createProposal (Stage 2)
   describe("createProposal (Stage 2)", function () {
-
-    it("создаёт голосование с 6 параметрами", async function () {
+    it("создает голосование с 6 параметрами", async function () {
       const deposit = ethers.parseEther("0.001");
       const tx = await voting.createProposal(
         "Test Proposal",
@@ -103,7 +123,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       expect(proposal.revealDeadline).to.equal(block.timestamp + startDelay + commitDuration + revealDuration);
     });
 
-    // NOTE: Тест события ProposalCreated пропущен из-за проблемы с anyValue() для uint256 параметров
+    // NOTE: тест события ProposalCreated пропущен из-за проблемы с anyValue() для uint256-параметров
 
     it("getProposalInfo возвращает полную информацию Stage 2", async function () {
       await createProposal();
@@ -121,7 +141,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
-  // ─── addCandidate (без изменений) ─────────────────────────────────────
+  // addCandidate
   describe("addCandidate", function () {
 
     it("добавляет кандидата до старта commit фазы", async function () {
@@ -157,7 +177,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
-  // ─── commit (Stage 2) ─────────────────────────────────────────────────
+  // commit (Stage 2)
   describe("commit (Stage 2)", function () {
 
     let proposalId;
@@ -168,20 +188,20 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       proposalId = await createProposal(61, 300, 300);
       await voting.addCandidate(proposalId, "Go");
       await voting.addCandidate(proposalId, "Rust");
-      // Сдвигаем время — commit фаза началась
+      // Сдвигаем время: commit-фаза началась
       await increaseTime(62);
     });
 
     it("отклоняет commit до начала commit фазы (startTime не наступил)", async function () {
-      // Создаём новый proposal без сдвига времени из beforeEach
-      // beforeEach уже сдвинул время на 62 сек, поэтому
-      // создаём новый proposal у которого startDelay большой
+      // Создаем новый proposal без сдвига времени из beforeEach
+      // beforeEach уже сдвинул время на 62 секунды, поэтому
+      // создаем новый proposal с большим startDelay
       const newId = await createProposal(3600, 300, 300); // startDelay = 1 час
       await voting.addCandidate(newId, "Go");
 
       const commitHash = ethers.ZeroHash;
 
-      // Время ещё не дошло до startTime нового proposal
+      // Время еще не дошло до startTime нового proposal
       await expect(
         voting.connect(voter1).commit(newId, commitHash, { value: deposit })
       ).to.be.revertedWith("Commit phase not started yet");
@@ -227,15 +247,15 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       ).to.be.revertedWith("Already committed");
     });
 
-    // NOTE: Тест убран, потому что контракт устанавливает фазу в Commit при создании,
-    // даже если startTime ещё не наступил. Контракт проверяет только phase == Phase.Commit.
+    // NOTE: этот тест убран, потому что контракт устанавливает фазу в Commit при создании,
+    // даже если startTime еще не наступил. Контракт проверяет только phase == Phase.Commit.
 
     it("отклоняет commit после дедлайна", async function () {
       const commitHash = ethers.ZeroHash;
 
-      // Переходим к commit фазе
+      // Переходим к commit-фазе
       await increaseTime(62);
-      // Ждём окончания commit phase (300 сек от старта)
+      // Ждем окончания commit phase (300 секунд от старта)
       await increaseTime(301);
 
       await expect(
@@ -264,16 +284,16 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
-  // ─── advancePhase ─────────────────────────────────────────────────────
+  // advancePhase
   describe("advancePhase", function () {
 
-    it("переход из Commit в Reveal фазу", async function () {
+    it("переводит из Commit в Reveal фазу", async function () {
       const proposalId = await createProposal(61, 300, 300);
       const proposal = await voting.proposals(proposalId);
 
       expect(proposal.phase).to.equal(0n); // Commit
 
-      // Ждём окончания commit фазы
+      // Ждем окончания commit фазы
       await increaseTime(362); // 61 (start) + 300 (commit) + 1
 
       await voting.advancePhase(proposalId);
@@ -282,7 +302,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       expect(updated.phase).to.equal(1n); // Reveal
     });
 
-    it("переход из Reveal в Finalized фазу", async function () {
+    it("переводит из Reveal в Finalized фазу", async function () {
       const proposalId = await createProposal(61, 300, 300);
 
       // Commit phase
@@ -299,7 +319,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       expect(proposal.finalized).to.equal(true);
     });
 
-    it("эмитит PhaseAdvanced события", async function () {
+    it("эмитит событие PhaseAdvanced", async function () {
       const proposalId = await createProposal(61, 300, 300);
 
       // Переход Commit -> Reveal
@@ -324,10 +344,10 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       ).to.be.revertedWith("Already finalized");
     });
 
-    it("отклоняет advancePhase до наступления дедлайна", async function () {
+    it("не меняет фазу до наступления дедлайна", async function () {
       const proposalId = await createProposal(100, 300, 300);
 
-      // Только начали, дедлайн ещё не прошёл
+      // Только начали, дедлайн еще не прошел
       await increaseTime(50);
 
       await expect(
@@ -336,7 +356,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
-  // ─── reveal (Stage 2) ─────────────────────────────────────────────────
+  // reveal (Stage 2)
   describe("reveal (Stage 2)", function () {
 
     let proposalId;
@@ -378,7 +398,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
 
       const balanceAfter = await ethers.provider.getBalance(voter1.address);
 
-      // Депозит должен быть возвращён
+      // Депозит должен быть возвращен
       expect(balanceAfter).to.equal(balanceBefore + deposit - gasUsed);
 
       // Проверяем, что голос записан
@@ -394,7 +414,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       await increaseTime(62);
       await voting.connect(voter1).commit(proposalId, commitHash, { value: deposit });
 
-      // Ещё в commit фазе
+      // Еще в commit фазе
       await expect(
         voting.connect(voter1).reveal(proposalId, candidateId, salt)
       ).to.be.revertedWith("Not in reveal phase");
@@ -446,7 +466,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       await increaseTime(301);
       await voting.advancePhase(proposalId); // Commit -> Reveal
 
-      // Пропускаем весь reveal период (300 + 1)
+      // Пропускаем весь reveal-период (300 + 1)
       await increaseTime(301);
 
       await expect(
@@ -504,10 +524,10 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
-  // ─── slashNoReveal (Stage 2) ──────────────────────────────────────────
+  // slashNoReveal (Stage 2)
   describe("slashNoReveal (Stage 2)", function () {
 
-    it("slash пользователя который committed но не revealed", async function () {
+    it("slash для пользователя, который committed, но не revealed", async function () {
       const deposit = ethers.parseEther("0.001");
       const proposalId = await createProposal(61, 300, 300);
       await voting.addCandidate(proposalId, "Go");
@@ -519,7 +539,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       await increaseTime(62);
       await voting.connect(voter1).commit(proposalId, commitHash, { value: deposit });
 
-      // Пропускаем через reveal phase (ещё 600 секунд)
+      // Пропускаем через reveal phase (еще 600 секунд)
       await increaseTime(600);
 
       const treasuryBefore = await voting.treasury(proposalId);
@@ -529,7 +549,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       const treasuryAfter = await voting.treasury(proposalId);
       expect(treasuryAfter).to.equal(treasuryBefore + deposit);
 
-      // Депозит должен быть обнулён
+      // Депозит должен быть обнулен
       const voterDeposit = await voting.deposits(proposalId, voter1.address);
       expect(voterDeposit).to.equal(0n);
     });
@@ -546,7 +566,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
 
       await increaseTime(600);
 
-      // voter2 может slash voter1
+      // voter2 тоже может вызвать slash для voter1
       await expect(
         voting.connect(voter2).slashNoReveal(proposalId, voter1.address)
       ).to.not.be.reverted;
@@ -562,13 +582,13 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       await increaseTime(62);
       await voting.connect(voter1).commit(proposalId, commitHash, { value: deposit });
 
-      // Ещё в commit фазе (не прошло 600 секунд)
+      // Еще в commit фазе (не прошло 600 секунд)
       await expect(
         voting.slashNoReveal(proposalId, voter1.address)
       ).to.be.revertedWith("Reveal deadline not passed");
     });
 
-    it("отклоняет slash для пользователя который revealed", async function () {
+    it("отклоняет slash для пользователя, который revealed", async function () {
       const deposit = ethers.parseEther("0.001");
       const proposalId = await createProposal(61, 300, 300);
       await voting.addCandidate(proposalId, "Go");
@@ -628,7 +648,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
-  // ─── Полный цикл commit-reveal-finalize ───────────────────────────────────
+  // Полный цикл commit-reveal-finalize
   describe("Полный цикл Stage 2", function () {
 
     it("полный цикл: commit -> reveal -> finalize", async function () {
@@ -705,7 +725,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
 
       await increaseTime(301);
 
-      // При ничье _findWinner возвращает 0 (winnerId не обновился)
+      // При ничьей _findWinner возвращает 0 (winnerId не обновился)
       const tx = await voting.advancePhase(proposalId); // Reveal -> Finalized
       await expect(tx)
         .to.emit(voting, "ProposalFinalized")
@@ -722,7 +742,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
       await voting.addCandidate(proposalId, "Go");
       await voting.addCandidate(proposalId, "Rust");
 
-      // voter1 и voter2 за Go, voter3 за Rust
+      // voter1 и voter2 голосуют за Go, voter3 — за Rust
       const salt1 = ethers.id("s1");
       const salt2 = ethers.id("s2");
       const salt3 = ethers.id("s3");
@@ -751,7 +771,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
-  // ─── finalizeProposal (legacy) ────────────────────────────────────────
+  // finalizeProposal (legacy)
   describe("finalizeProposal (legacy)", function () {
 
     it("финализирует через legacy функцию", async function () {
@@ -780,7 +800,7 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
-  // ─── getResults ───────────────────────────────────────────────────────
+  // getResults
   describe("getResults", function () {
 
     it("возвращает корректные результаты после reveal", async function () {
@@ -814,4 +834,135 @@ describe("Voting - Stage 2: Commit-Reveal", function () {
     });
   });
 
+// Stage 3: VoterRegistry
+describe("Stage 3: VoterRegistry — базовые операции", function () {
+  it("register() от REGISTRAR_ROLE — успех, isRegistered = true", async function () {
+    const [,,,,stranger] = await ethers.getSigners();
+    await registry.register(stranger.address);
+    expect(await registry.isRegistered(stranger.address)).to.equal(true);
+  });
+
+  it("register() от постороннего — revert", async function () {
+    const [,,,,stranger] = await ethers.getSigners();
+    await expect(
+      registry.connect(stranger).register(voter1.address)
+    ).to.be.reverted;
+  });
+
+  it("register() уже зарегистрированного — revert 'Already registered'", async function () {
+    await expect(
+      registry.register(voter1.address)
+    ).to.be.revertedWith("Already registered");
+  });
+
+  it("revoke() — успех, isRegistered = false", async function () {
+    await registry.revoke(voter1.address);
+    expect(await registry.isRegistered(voter1.address)).to.equal(false);
+  });
+
+  it("revoke() незарегистрированного — revert 'Not registered'", async function () {
+    const [,,,,stranger] = await ethers.getSigners();
+    await expect(
+      registry.revoke(stranger.address)
+    ).to.be.revertedWith("Not registered");
+  });
+
+  it("selfRegister() когда флаг закрыт — revert 'Self-registration closed'", async function () {
+    const [,,,,stranger] = await ethers.getSigners();
+    await expect(
+      registry.connect(stranger).selfRegister()
+    ).to.be.revertedWith("Self-registration closed");
+  });
+
+  it("selfRegister() когда флаг открыт — успех", async function () {
+    const [,,,,stranger] = await ethers.getSigners();
+    await registry.setSelfRegistration(true);
+    await registry.connect(stranger).selfRegister();
+    expect(await registry.isRegistered(stranger.address)).to.equal(true);
+  });
+
+  it("эмитит событие VoterRegistered", async function () {
+    const [,,,,stranger] = await ethers.getSigners();
+    await expect(registry.register(stranger.address))
+      .to.emit(registry, "VoterRegistered")
+      .withArgs(stranger.address, owner.address);
+  });
+
+  it("эмитит событие VoterRevoked", async function () {
+    await expect(registry.revoke(voter1.address))
+      .to.emit(registry, "VoterRevoked")
+      .withArgs(voter1.address, owner.address);
+  });
+});
+
+
+  // Stage 3: Интеграция Voting + VoterRegistry
+  describe("Stage 3: Интеграция Voting + VoterRegistry", function () {
+    it("commit() от незарегистрированного — revert 'Not registered'", async function () {
+      const [,,,,stranger] = await ethers.getSigners();
+      const proposalId = await createProposal();
+      await voting.addCandidate(proposalId, "Go");
+      await increaseTime(62);
+
+      const hash = computeCommitHash(1, ethers.id("salt"));
+      await expect(
+        voting.connect(stranger).commit(proposalId, hash, { value: ethers.parseEther("0.001") })
+      ).to.be.revertedWith("Not registered");
+    });
+
+    it("commit() от зарегистрированного — успех", async function () {
+      const proposalId = await createProposal();
+      await voting.addCandidate(proposalId, "Go");
+      await increaseTime(62);
+
+      const hash = computeCommitHash(1, ethers.id("salt1"));
+      await expect(
+        voting.connect(voter1).commit(proposalId, hash, { value: ethers.parseEther("0.001") })
+      ).to.emit(voting, "CommitMade");
+    });
+
+    it("reveal() разрешён даже после отзыва регистрации (право зафиксировано commit-ом)", async function () {
+      const proposalId = await createProposal();
+      await voting.addCandidate(proposalId, "Go");
+      await increaseTime(62);
+
+      const salt = ethers.id("salt");
+      const hash = computeCommitHash(1, salt);
+      await voting.connect(voter1).commit(proposalId, hash, { value: ethers.parseEther("0.001") });
+
+      // Отзываем регистрацию перед reveal
+      await registry.revoke(voter1.address);
+      expect(await registry.isRegistered(voter1.address)).to.equal(false);
+
+      await increaseTime(301);
+      await voting.advancePhase(proposalId);
+
+      // Несмотря на отзыв — reveal должен пройти успешно
+      await expect(
+        voting.connect(voter1).reveal(proposalId, 1, salt)
+      ).to.emit(voting, "VoteRevealed");
+    });
+
+    it("reveal() от зарегистрированного — успех", async function () {
+      const proposalId = await createProposal();
+      await voting.addCandidate(proposalId, "Go");
+      await increaseTime(62);
+
+      const salt = ethers.id("salt");
+      const hash = computeCommitHash(1, salt);
+      await voting.connect(voter1).commit(proposalId, hash, { value: ethers.parseEther("0.001") });
+
+      await increaseTime(301);
+      await voting.advancePhase(proposalId);
+
+      await expect(
+        voting.connect(voter1).reveal(proposalId, 1, salt)
+      ).to.emit(voting, "VoteRevealed");
+    });
+
+    it("адрес реестра сохранен в контракте Voting", async function () {
+      const registryAddr = await registry.getAddress();
+      expect(await voting.registry()).to.equal(registryAddr);
+    });
+  });
 });
