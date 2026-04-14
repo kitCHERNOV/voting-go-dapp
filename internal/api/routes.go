@@ -7,39 +7,23 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-// SetupRouter - регистрирует все маршруты и возвращает настроенный роутер
-func SetupRouter(client *blockchain.Client) chi.Router {
+// SetupRouter регистрирует все маршруты и возвращает настроенный роутер.
+func SetupRouter(client *blockchain.Client, registry *blockchain.RegistryClient) chi.Router {
 	r := chi.NewRouter()
-
-	// Middleware для логирования и восстановления после паники
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	
-	h := NewHandler(client)
 
-	// Health check endpoint
+	h := NewHandler(client, registry)
+
+	// Health check
 	r.Get("/health", h.Health)
 
 	r.Route("/api/proposals", func(r chi.Router) {
-		// Список всех голосований
 		r.Get("/", h.GetAllProposals)
-
-		// Детали голосования
 		r.Get("/{id}", h.GetProposal)
-
-		// Список кандидатов
 		r.Get("/{id}/candidates", h.GetCandidates)
-
-		// Результаты голосования
 		r.Get("/{id}/results", h.GetResults)
-
-		// Проверка голосовал ли адрес
 		r.Get("/{id}/votes/{addr}", h.CheckVoted)
-
-		// Голосование
-		// r.Post("/{id}/vote", h.Vote)
-
-		// Финализация
 		r.Post("/{id}/finalize", h.FinalizeProposal)
 
 		// Stage 2: Commit-Reveal
@@ -47,10 +31,23 @@ func SetupRouter(client *blockchain.Client) chi.Router {
 		r.Post("/{id}/reveal", h.Reveal)
 		r.Get("/{id}/phase", h.GetPhase)
 		r.Post("/{id}/advance-phase", h.AdvancePhase)
+
+		// Stage 3: список адресов сделавших commit
+		r.Get("/{id}/voters", h.GetProposalVoters)
 	})
 
 	// Утилиты
 	r.Post("/api/tools/commit-hash", h.GenerateCommitHash)
+
+	// Stage 3: Voter Registry
+	r.Get("/api/voters/count", h.GetVoterCount)
+	r.Get("/api/voters/{addr}/status", h.GetVoterStatus)
+
+	r.Route("/api/admin/voters", func(r chi.Router) {
+		r.Post("/register", h.RegisterVoter)
+		r.Post("/register-batch", h.RegisterBatch)
+		r.Delete("/{addr}", h.RevokeVoter)
+	})
 
 	return r
 }
