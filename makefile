@@ -1,6 +1,7 @@
 # ─── Переменные ───────────────────────────────────────────────────────
 RPC_URL         ?= http://127.0.0.1:8545
 CONTRACT_ADDRESS ?= $(shell cat deploy.json | jq -r .address)
+REGISTRY_ADDRESS ?= $(shell cat deploy.json | jq -r .registryAddress)
 
 # ─── Hardhat ──────────────────────────────────────────────────────────
 
@@ -29,10 +30,11 @@ test-contract:
 ## Экспортировать ABI из артефактов
 abi:
 	node -e "const a=require('./artifacts/contracts/Voting.sol/Voting.json');require('fs').writeFileSync('Voting.abi',JSON.stringify(a.abi,null,2))"
-
+	node -e "const a=require('./artifacts/contracts/VoterRegistry.sol/VoterRegistry.json');require('fs').writeFileSync('VoterRegistry.abi',JSON.stringify(a.abi,null,2))"
 ## Сгенерировать Go-биндинг из ABI
 gen:
 	/home/kita/go/bin/abigen --abi=Voting.abi --pkg=blockchain --type=Voting --out=internal/blockchain/voting.go
+	/home/kita/go/bin/abigen --abi=VoterRegistry.abi --pkg=blockchain --type=VoterRegistry --out=internal/blockchain/registry.go
 
 ## Полный цикл: компиляция + ABI + биндинг
 build-contract: compile abi gen

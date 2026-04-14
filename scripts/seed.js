@@ -1,36 +1,33 @@
 const { ethers } = require("hardhat");
-const { address } = require("../deploy.json");
+const { address, registryAddress } = require("../deploy.json");
 
 async function main() {
-  const [owner] = await ethers.getSigners();
+  const [owner, voter1, voter2, voter3] = await ethers.getSigners();
+
   const voting = await ethers.getContractAt("Voting", address);
+  const registry = await ethers.getContractAt("VoterRegistry", registryAddress);
 
-  // Создаём голосование: старт через 61 сек, длительность 2 часа
-  // const tx = await voting.createProposal(
-  //   "Лучший язык программирования",
-  //   "Голосуем за лучший язык 2024",
-  //   61,
-  //   7200
-  // );
+  // Регистрируем тестовых участников
+  await (await registry.register(voter1.address)).wait();
+  console.log("Registered:", voter1.address);
 
-  // Создаём голосование Stage 2:
-  // startDelay=61с, commitDuration=7200с (2ч), revealDuration=3600с (1ч)
+  await (await registry.register(voter2.address)).wait();
+  console.log("Registered:", voter2.address);
+
+  await (await registry.register(voter3.address)).wait();
+  console.log("Registered:", voter3.address);
+
+  // Создаём тестовое голосование
   const depositRequired = ethers.parseEther("0.001");
-
   const tx = await voting.createProposal(
     "Лучший язык программирования",
     "Голосуем за лучший язык 2024",
-    61,
-    7200,
-    3600,
+    61,    // startDelay (секунд)
+    7200,  // commitDuration (2 часа)
+    3600,  // revealDuration (1 час)
     depositRequired
   );
-  const receipt = await tx.wait();
-
-  // Получаем ID из события
-//   const event = receipt.logs
-//     .map(log => { try { return voting.interface.parseLog(log) } catch { return null } })
-//     .find(e => e && e.name === "ProposalCreated");
+  await tx.wait();
 
   const proposalId = await voting.proposalCount();
   console.log("Proposal ID:", proposalId.toString());
@@ -45,8 +42,10 @@ async function main() {
   await (await voting.addCandidate(proposalId, "Python")).wait();
   console.log("Added: Python");
 
-  console.log("Done! Proposal ID:", proposalId.toString());
+  console.log("\nDone!");
+  console.log("Proposal ID:", proposalId.toString());
   console.log("Deposit required:", ethers.formatEther(depositRequired), "ETH");
+  console.log("Registered voters:", voter1.address, voter2.address, voter3.address);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
