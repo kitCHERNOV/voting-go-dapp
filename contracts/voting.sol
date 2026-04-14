@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "./VoterRegistry.sol";
+
 contract Voting {
+    // ===== STAGE 3; Voter Registry =====
+    VoterRegistry public immutable registry;
+
     // ===== STAGE 2: Phase Enum =====
     enum Phase { Commit, Reveal, Finalized }
 
@@ -57,6 +62,12 @@ contract Voting {
     // Slashed deposits (treasury): proposalId => totalWeiSlashed
     mapping(uint256 => uint256) public treasury;
 
+    // ===== STAGE 3: модификатор регистрации =====
+    modifier onlyRegistered() {
+        require(registry.isRegistered(msg.sender), "Not registered");
+        _;
+    }
+
     // Modifier: проверка активности голосования
     modifier proposalActive(uint256 id) {
         Proposal storage p = proposals[id];
@@ -64,6 +75,11 @@ contract Voting {
         require(p.phase != Phase.Finalized, "Already finalized");
         // Phase-specific timing handled in individual functions
         _;
+    }
+
+    // ===== STAGE 3: конструктор принимает адрес реестра =====
+    constructor(address _registry) {
+        registry = VoterRegistry(_registry);
     }
 
     /// @notice Создаёт голосование с commit-reveal схемой. Возвращает ID.
@@ -129,14 +145,15 @@ contract Voting {
         emit CandidateAdded(_proposalId, cid, _name);
     }
 
-    // ===== STAGE 2: Commit Phase =====
+    // ===== STAGE 2 + STAGE 3: Commit Phase =====
 
-    /// @notice Commit a vote hash with deposit. Call during commit phase.
+    /// @notice Commit голоса с депозитом. Только зарегистрированные участники.
     /// @param _proposalId Proposal ID
     /// @param _commitHash keccak256(abi.encodePacked(candidateId, salt))
     function commit(uint256 _proposalId, bytes32 _commitHash)
         external
         payable
+        onlyRegistered
     {
         Proposal storage p = proposals[_proposalId];
         require(p.id != 0, "Proposal not found");
@@ -152,7 +169,7 @@ contract Voting {
         emit CommitMade(_proposalId, msg.sender, _commitHash, msg.value);
     }
 
-    // ===== STAGE 2: Reveal Phase =====
+    // ===== STAGE 2: + STAGE 3 Reveal Phase =====
 
     /// @notice Reveal a previously committed vote. Call during reveal phase.
     /// @param _proposalId Proposal ID
