@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -309,4 +310,42 @@ func (c *Client) GetProposalInfo(ctx context.Context, id uint64) (map[string]any
 		"finalized":        info.Finalized,
 		"total_votes":      info.TotalVotes.Uint64(),
 	}, nil
+}
+
+// GetProposalCommitters — возвращает адреса, сделавшие commit для голосования.
+// Читает события CommitMade из блокчейна.
+func (c *Client) GetProposalCommitters(ctx context.Context, proposalID uint64) ([]string, error) {
+	parsedABI, err := VotingMetaData.GetAbi()
+	if err != nil {
+		return nil, fmt.Errorf("parse abi: %w", err)
+	}
+
+	eventID := parsedABI.Events["CommitMade"].ID
+	proposalTopic := common.BigToHash(new(big.Int).SetUint64(proposalID))
+	
+	query := ethereum.FilterQuery{
+		Addresses: []common.Address{c.address},
+		Topics:    [][]common.Hash{{eventID}, {proposalTopic}},
+	}
+
+	logs, err := c.eth.FilterLogs(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("filter logs: %w", err)
+	}
+
+	seen := make(map[common.Address]bool)
+	for _, l := range logs {
+		if len(l.Topics) < 3 {
+			continue
+		}
+		// Topics[2] = voter address (indexed)
+		voter := common.HexToAddress(l.Topics[2].Hex())
+		seen[voter] = true
+	}
+
+	result := make([]string, 0, len(seen))
+	for addr := range seen {
+		result = append(result, addr.Hex())
+	}
+	return result, nil
 }
