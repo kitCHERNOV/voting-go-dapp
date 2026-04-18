@@ -510,6 +510,34 @@ func (h *Handler) GetProposalVoters(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// ─── Stage B: Верификация ─────────────────────────────────────────────────────
+
+// VerifyProposal — GET /api/proposals/{id}/verify
+// Независимая верификация: читает только события из блокчейна,
+// не доверяет состоянию контракта и не доверяет Go-серверу.
+// 200 OK — результаты совпадают. 409 Conflict — обнаружены расхождения.
+func (h *Handler) VerifyProposal(w http.ResponseWriter, r *http.Request) {
+	id, err := parseProposalID(r)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid proposal id"})
+		return
+	}
+	ctx, cancel := ctxWithTimeout()
+	defer cancel()
+
+	result, err := h.client.VerifyProposal(ctx, id)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	status := http.StatusOK
+	if !result.Valid {
+		status = http.StatusConflict
+	}
+	writeJSON(w, status, result)
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // hexToBytes32 конвертирует hex строку (с 0x или без) в [32]byte.
