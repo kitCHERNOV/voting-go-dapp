@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Голосование</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- Навбар -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <a href="/" style="color:inherit;text-decoration:none">🗳 <span>Vote</span>Chain</a>
+  </div>
+  <div class="navbar-right">
+    <div id="wallet-status">
+      <button class="btn btn-primary btn-sm" id="btn-connect">Подключить кошелёк</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Загрузка -->
+  <div id="loading">
+    <div class="skeleton skeleton-line" style="width:40%;margin-bottom:1rem"></div>
+    <div class="skeleton skeleton-line short"></div>
+    <div class="skeleton skeleton-card" style="margin-top:1.5rem"></div>
+  </div>
+
+  <!-- Ошибка -->
+  <div id="error" class="alert alert-error" style="display:none"></div>
+
+  <!-- Основной контент -->
+  <div id="content" style="display:none">
+
+    <!-- Заголовок -->
+    <div class="page-header">
+      <div>
+        <a href="/" style="font-size:0.85rem;color:var(--text-muted)">← Все голосования</a>
+        <h1 id="proposal-title" style="margin-top:0.25rem"></h1>
+      </div>
+      <span id="phase-badge"></span>
+    </div>
+
+    <p id="proposal-desc" style="color:var(--text-muted);margin-bottom:1.5rem"></p>
+
+    <!-- Инфо блок -->
+    <div class="card" style="margin-bottom:1.5rem">
+      <div style="display:flex;gap:2rem;flex-wrap:wrap;font-size:0.88rem">
+        <div>
+          <div style="color:var(--text-muted)">Дедлайн фазы</div>
+          <div id="phase-deadline"></div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted)">Осталось</div>
+          <div id="phase-countdown" class="countdown"></div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted)">Депозит</div>
+          <div id="deposit-required"></div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted)">Статус регистрации</div>
+          <div id="voter-status">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Кнопка смены фазы -->
+    <div id="advance-section" style="display:none;margin-bottom:1rem">
+      <div class="alert alert-warning">
+        Дедлайн текущей фазы истёк. Можно перевести голосование в следующую фазу.
+      </div>
+      <button class="btn btn-secondary" id="btn-advance">Сменить фазу</button>
+    </div>
+
+    <!-- ═══ ФАЗА COMMIT ═══ -->
+    <div id="phase-commit" style="display:none">
+      <div class="card">
+        <h3 style="margin-bottom:1rem">Выберите кандидата</h3>
+
+        <div id="already-voted" class="alert alert-info" style="display:none">
+          Вы уже проголосовали в этом голосовании.
+        </div>
+
+        <div id="not-registered" class="alert alert-warning" style="display:none">
+          Ваш адрес не зарегистрирован для участия в голосовании.
+        </div>
+
+        <div id="candidate-list" class="candidate-list"></div>
+
+        <div class="alert alert-warning" style="margin-top:1rem;display:none" id="salt-warning">
+          ⚠ После голосования сохраните salt в браузере — он понадобится на этапе reveal.
+          Не очищайте данные браузера до завершения голосования.
+        </div>
+
+        <button class="btn btn-primary" id="btn-commit" style="margin-top:1rem" disabled>
+          Проголосовать
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ ФАЗА REVEAL ═══ -->
+    <div id="phase-reveal" style="display:none">
+      <div class="card">
+        <h3 style="margin-bottom:1rem">Раскрыть голос</h3>
+
+        <div id="already-revealed" class="alert alert-success" style="display:none">
+          Вы уже раскрыли свой голос.
+        </div>
+
+        <div id="reveal-form">
+          <div class="alert alert-info" id="salt-found" style="display:none">
+            ✓ Salt найден в браузере и подставлен автоматически.
+          </div>
+          <div class="alert alert-warning" id="salt-not-found" style="display:none">
+            Salt не найден в браузере. Введите его вручную.
+          </div>
+
+          <div class="form-group" id="salt-input-group" style="display:none">
+            <label>Salt (из фазы commit)</label>
+            <input type="text" id="salt-input" placeholder="0x...">
+          </div>
+
+          <div class="form-group">
+            <label>Кандидат (из фазы commit)</label>
+            <div id="reveal-candidate-name" style="font-weight:500;padding:0.5rem 0"></div>
+          </div>
+
+          <button class="btn btn-primary" id="btn-reveal">Раскрыть голос</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ФАЗА FINALIZED ═══ -->
+    <div id="phase-finalized" style="display:none">
+      <div class="card" style="margin-bottom:1rem">
+        <h3 style="margin-bottom:1rem">Результаты</h3>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Кандидат</th>
+              <th>Голоса</th>
+              <th>Доля</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Верификация -->
+      <div class="card">
+        <h3 style="margin-bottom:0.75rem">Верификация результатов</h3>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem">
+          Независимая проверка: верификатор читает события из блокчейна
+          и пересчитывает результаты без доверия к серверу.
+        </p>
+        <button class="btn btn-secondary" id="btn-verify">Верифицировать</button>
+        <div id="verify-result" style="margin-top:1rem"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/web3.js"></script>
+<script>
+// ─── Инициализация ────────────────────────────────────────────────────────
+
+const params     = new URLSearchParams(location.search);
+const proposalId = parseInt(params.get('id'));
+
+if (!proposalId) {
+  location.href = '/';
+}
+
+let proposal   = null;
+let candidates = [];
+let account    = null;
+let countdownInterval = null;
+
+// ─── Кошелёк ──────────────────────────────────────────────────────────────
+
+document.getElementById('btn-connect').addEventListener('click', async () => {
+  try {
+    account = await connectWallet();
+    renderWallet(account);
+    await checkVoterStatus();
+    updateAdvanceVisibility();
+  } catch (err) {
+    showAlert('error', parseContractError(err));
+  }
+});
+
+window.addEventListener('walletChanged', async (e) => {
+  account = e.detail.account;
+  renderWallet(account);
+  if (account) await checkVoterStatus();
+  updateAdvanceVisibility();
+});
+
+function renderWallet(acc) {
+  account = acc;
+  // Перерисовываем reveal фазу когда кошелёк подключился
+  if (proposal && proposal.phase === 'reveal') {
+    renderRevealPhase();
+  }
+  const el = document.getElementById('wallet-status');
+  if (acc) {
+    el.innerHTML = `<span class="wallet-address">🟢 ${shortAddr(acc)}</span>`;
+  } else {
+    el.innerHTML = `<button class="btn btn-primary btn-sm" id="btn-connect">Подключить кошелёк</button>`;
+    document.getElementById('btn-connect').addEventListener('click', async () => {
+      account = await connectWallet();
+      renderWallet(account);
+      updateAdvanceVisibility();
+    });
+  }
+}
+
+// Проверяем подключён ли MetaMask
+(async () => {
+  if (isMetaMaskInstalled() && window.ethereum.selectedAddress) {
+    account = window.ethereum.selectedAddress;
+    renderWallet(account);
+  }
+})();
+
+// ─── Загрузка данных ──────────────────────────────────────────────────────
+
+async function loadPage() {
+  try {
+    [proposal, { candidates }] = await Promise.all([
+      getProposal(proposalId),
+      getCandidates(proposalId),
+    ]);
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+
+    renderHeader();
+    renderPhase();
+    startCountdown();
+    updateAdvanceVisibility();
+
+    if (account) await checkVoterStatus();
+
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display   = 'block';
+    document.getElementById('error').textContent     = 'Ошибка загрузки: ' + err.message;
+  }
+}
+
+function renderHeader() {
+  document.title = proposal.title + ' — VoteChain';
+  document.getElementById('proposal-title').textContent = proposal.title;
+  document.getElementById('proposal-desc').textContent  = proposal.description;
+  document.getElementById('phase-badge').className      = phaseBadgeClass(proposal.phase);
+  document.getElementById('phase-badge').textContent    = phaseLabel(proposal.phase);
+
+  const deadlineTs = proposal.phase === 'commit'
+    ? proposal.commit_deadline
+    : proposal.reveal_deadline;
+
+  document.getElementById('phase-deadline').textContent    = formatDeadline(deadlineTs);
+  document.getElementById('deposit-required').textContent  =
+    (Number(proposal.deposit_required) / 1e18).toFixed(4) + ' ETH';
+}
+
+function startCountdown() {
+  if (countdownInterval) clearInterval(countdownInterval);
+
+  function tick() {
+    const deadlineTs = proposal.phase === 'commit'
+      ? proposal.commit_deadline
+      : proposal.reveal_deadline;
+
+    const el   = document.getElementById('phase-countdown');
+    const diff  = deadlineTs - Math.floor(Date.now() / 1000);
+
+    if (diff <= 0) {
+      el.textContent = 'Истёк';
+      el.classList.add('urgent');
+      updateAdvanceVisibility();
+      clearInterval(countdownInterval);
+    } else {
+      el.textContent = countdown(deadlineTs);
+      el.classList.toggle('urgent', diff < 300);
+      updateAdvanceVisibility();
+    }
+  }
+
+  tick();
+  countdownInterval = setInterval(tick, 1000);
+}
+
+function canAdvancePhase() {
+  if (!proposal || !account || proposal.phase === 'finalized') {
+    return false;
+  }
+
+  const deadlineTs = proposal.phase === 'commit'
+    ? proposal.commit_deadline
+    : proposal.reveal_deadline;
+  const deadlinePassed = deadlineTs <= Math.floor(Date.now() / 1000);
+  const isCreator = proposal.creator
+    && account.toLowerCase() === proposal.creator.toLowerCase();
+
+  return deadlinePassed && isCreator;
+}
+
+function updateAdvanceVisibility() {
+  const section = document.getElementById('advance-section');
+  section.style.display = canAdvancePhase() ? 'block' : 'none';
+}
+
+// ─── Отображение фазы ─────────────────────────────────────────────────────
+
+function renderPhase() {
+  document.getElementById('phase-commit').style.display    = 'none';
+  document.getElementById('phase-reveal').style.display    = 'none';
+  document.getElementById('phase-finalized').style.display = 'none';
+
+  if (proposal.phase === 'commit')    renderCommitPhase();
+  if (proposal.phase === 'reveal')    renderRevealPhase();
+  if (proposal.phase === 'finalized') renderFinalizedPhase();
+}
+
+// ─── Commit фаза ──────────────────────────────────────────────────────────
+
+function renderCommitPhase() {
+  document.getElementById('phase-commit').style.display = 'block';
+
+  const list = document.getElementById('candidate-list');
+  list.innerHTML = candidates.map(c => `
+    <label class="candidate-item" data-id="${c.id}">
+      <input type="radio" name="candidate" value="${c.id}">
+      <span class="candidate-name">${c.name}</span>
+    </label>
+  `).join('');
+
+  // Подсветка выбранного кандидата
+  list.querySelectorAll('input[type=radio]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      list.querySelectorAll('.candidate-item').forEach(el => el.classList.remove('selected'));
+      radio.closest('.candidate-item').classList.add('selected');
+      document.getElementById('btn-commit').disabled = false;
+    });
+  });
+}
+
+async function checkVoterStatus() {
+  if (!account || !proposal) return;
+
+  try {
+    const [status, voted] = await Promise.all([
+      getVoterStatus(account),
+      checkVoted(proposalId, account),
+    ]);
+
+    const statusEl = document.getElementById('voter-status');
+    statusEl.textContent = status.registered ? '✓ Зарегистрирован' : '✗ Не зарегистрирован';
+    statusEl.style.color = status.registered ? 'var(--success)' : 'var(--danger)';
+
+    if (proposal.phase === 'commit') {
+      if (voted.voted) {
+        document.getElementById('already-voted').style.display = 'block';
+        document.getElementById('btn-commit').disabled = true;
+      }
+      if (!status.registered) {
+        document.getElementById('not-registered').style.display = 'block';
+        document.getElementById('btn-commit').disabled = true;
+      }
+    }
+
+    if (proposal.phase === 'reveal') {
+      if (voted.voted) {
+        document.getElementById('already-revealed').style.display = 'block';
+        document.getElementById('reveal-form').style.display = 'none';
+      }
+    }
+  } catch (err) {
+    console.warn('Ошибка проверки статуса:', err.message);
+  }
+}
+
+document.getElementById('btn-commit').addEventListener('click', async () => {
+  const selected = document.querySelector('input[name=candidate]:checked');
+  if (!selected) return;
+
+  const btn = document.getElementById('btn-commit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Подготовка...';
+
+  try {
+    // Генерируем commit hash на сервере
+    const { commit_hash, salt } = await generateCommitHash(parseInt(selected.value));
+
+    // Сохраняем salt в localStorage
+    const saltKey = `salt_${proposalId}_${account}`;
+    const cidKey  = `cid_${proposalId}_${account}`;
+    localStorage.setItem(saltKey, salt);
+    localStorage.setItem(cidKey, selected.value);
+
+    btn.innerHTML = '<span class="spinner"></span> Ожидание MetaMask...';
+
+    // Отправляем транзакцию через MetaMask
+    await commitVote(
+      proposalId,
+      commit_hash,
+      proposal.deposit_required
+    );
+
+    document.getElementById('already-voted').style.display = 'block';
+    document.getElementById('salt-warning').style.display  = 'block';
+    btn.style.display = 'none';
+
+    showAlert('success', 'Голос зафиксирован! Salt сохранён в браузере.');
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Проголосовать';
+    showAlert('error', parseContractError(err));
+  }
+});
+
+// ─── Reveal фаза ──────────────────────────────────────────────────────────
+
+function renderRevealPhase() {
+  document.getElementById('phase-reveal').style.display = 'block';
+
+  const currentAccount = getAccount() || account || window.ethereum?.selectedAddress;
+  const saltKey = `salt_${proposalId}_${currentAccount}`;
+  const cidKey  = `cid_${proposalId}_${currentAccount}`;
+  const salt    = localStorage.getItem(saltKey);
+  const cid     = localStorage.getItem(cidKey);
+
+  if (salt) {
+    document.getElementById('salt-found').style.display = 'block';
+  } else {
+    document.getElementById('salt-not-found').style.display  = 'block';
+    document.getElementById('salt-input-group').style.display = 'block';
+  }
+
+  // Показываем имя кандидата
+  if (cid) {
+    const c = candidates.find(x => String(x.id) === cid);
+    document.getElementById('reveal-candidate-name').textContent =
+      c ? c.name : 'Кандидат #' + cid;
+  }
+}
+
+document.getElementById('btn-reveal').addEventListener('click', async () => {
+  const currentAccount = getAccount() || account;
+  const saltKey = `salt_${proposalId}_${currentAccount}`;
+  const cidKey  = `cid_${proposalId}_${currentAccount}`;
+
+  const salt = localStorage.getItem(saltKey)
+    || document.getElementById('salt-input').value.trim();
+  const cid  = localStorage.getItem(cidKey);
+
+  if (!salt) {
+    showAlert('error', 'Введите salt');
+    return;
+  }
+
+  const btn = document.getElementById('btn-reveal');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Ожидание MetaMask...';
+
+  try {
+    await revealVote(proposalId, parseInt(cid), salt);
+
+    // Удаляем salt после успешного reveal
+    localStorage.removeItem(saltKey);
+    localStorage.removeItem(cidKey);
+
+    document.getElementById('already-revealed').style.display = 'block';
+    document.getElementById('reveal-form').style.display = 'none';
+    showAlert('success', 'Голос раскрыт успешно!');
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Раскрыть голос';
+    showAlert('error', parseContractError(err));
+  }
+});
+
+// ─── Finalized фаза ───────────────────────────────────────────────────────
+
+async function renderFinalizedPhase() {
+  document.getElementById('phase-finalized').style.display = 'block';
+
+  try {
+    const { results } = await getResults(proposalId);
+    const total = results.reduce((s, r) => s + r.vote_count, 0);
+    const maxVotes = Math.max(...results.map(r => r.vote_count));
+
+    const candidateMap = {};
+    candidates.forEach(c => { candidateMap[c.id] = c.name; });
+
+    const tbody = document.getElementById('results-body');
+    tbody.innerHTML = results.map(r => {
+      const isWinner = r.vote_count === maxVotes && maxVotes > 0;
+      const pct = total > 0 ? Math.round(r.vote_count / total * 100) : 0;
+      return `
+        <tr class="${isWinner ? 'winner' : ''}">
+          <td>${isWinner ? '🏆 ' : ''}${candidateMap[r.candidate_id] || '#' + r.candidate_id}</td>
+          <td>${r.vote_count}</td>
+          <td>${pct}%</td>
+          <td>
+            <div class="vote-bar-wrap">
+              <div class="vote-bar ${isWinner ? 'winner-bar' : ''}"
+                   style="width:${pct}%"></div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    showAlert('error', 'Ошибка загрузки результатов: ' + err.message);
+  }
+}
+
+// ─── Смена фазы ───────────────────────────────────────────────────────────
+
+document.getElementById('btn-advance').addEventListener('click', async () => {
+  if (!canAdvancePhase()) {
+    updateAdvanceVisibility();
+    showAlert('error', 'Сменить фазу может только создатель голосования после истечения дедлайна');
+    return;
+  }
+
+  const btn = document.getElementById('btn-advance');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Ожидание MetaMask...';
+
+  try {
+    await advancePhase(proposalId);
+    showAlert('success', 'Фаза изменена. Обновляем страницу...');
+    setTimeout(() => location.reload(), 2000);
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Сменить фазу';
+    showAlert('error', parseContractError(err));
+  }
+});
+
+// ─── Верификация ──────────────────────────────────────────────────────────
+
+document.getElementById('btn-verify').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-verify');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Верификация...';
+
+  try {
+    const result = await verifyProposal(proposalId);
+    const el = document.getElementById('verify-result');
+    el.className = 'verify-result ' + (result.valid ? 'valid' : 'invalid');
+
+    if (result.valid) {
+      el.innerHTML = `
+        <strong>✓ Результаты верифицированы</strong><br>
+        Голосов пересчитано: ${result.total_votes}<br>
+        Победитель (из событий): кандидат #${result.winner_id}<br>
+        Победитель (из контракта): кандидат #${result.contract_winner_id}
+      `;
+    } else {
+      el.innerHTML = `
+        <strong>✗ Обнаружены расхождения</strong>
+        <ul class="discrepancy-list">
+          ${result.discrepancies.map(d => `<li>${d}</li>`).join('')}
+        </ul>
+      `;
+    }
+  } catch (err) {
+    showAlert('error', 'Ошибка верификации: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Верифицировать';
+  }
+});
+
+// ─── Вспомогательные функции ──────────────────────────────────────────────
+
+function showAlert(type, message) {
+  const existing = document.getElementById('page-alert');
+  if (existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.id = 'page-alert';
+  el.className = `alert alert-${type}`;
+  el.textContent = message;
+
+  document.querySelector('.container').prepend(el);
+  setTimeout(() => el.remove(), 5000);
+}
+
+// Предзагрузка адресов
+// Загружаем адреса контрактов из Go-сервера
+(async () => {
+  const config = await fetch('/api/config').then(r => r.json());
+  setContractAddresses(config.contract_address, config.registry_address);
+})();
+
+// ─── Запуск ───────────────────────────────────────────────────────────────
+
+loadPage();
+</script>
+
+</body>
+</html>

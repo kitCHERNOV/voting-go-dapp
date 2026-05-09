@@ -23,8 +23,8 @@ async function main() {
     "Лучший язык программирования",
     "Голосуем за лучший язык 2024",
     61,    // startDelay (секунд)
-    7200,  // commitDuration (2 часа)
-    3600,  // revealDuration (1 час)
+    300, //7200,  // commitDuration (2 часа)
+    300, //3600,  // revealDuration (1 час)
     depositRequired
   );
   await tx.wait();

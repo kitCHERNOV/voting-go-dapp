@@ -17,9 +17,8 @@ func SetupRouter(client *blockchain.Client, registry *blockchain.RegistryClient)
 	h := NewHandler(client, registry)
 
 	// Раздача статических файлов из папки web/
-	fs := http.FileServer(http.Dir("./web"))
-	r.Handle("/css/*", fs)
-	r.Handle("/js/*", fs)
+	r.Handle("/css/*", http.StripPrefix("/css", http.FileServer(http.Dir("./web/css"))))
+	r.Handle("/js/*", http.StripPrefix("/js", http.FileServer(http.Dir("./web/js"))))
 
 	// Страницы приложения
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +33,8 @@ func SetupRouter(client *blockchain.Client, registry *blockchain.RegistryClient)
 
 	// Health check
 	r.Get("/health", h.Health)
+
+	r.Get("/api/config", h.GetConfig)
 
 	r.Route("/api/proposals", func(r chi.Router) {
 		r.Get("/", h.GetAllProposals)

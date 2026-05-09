@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Децентрализованное голосование</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- Навбар -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    🗳 <span>Vote</span>Chain
+  </div>
+  <div class="navbar-right">
+    <a href="/admin" class="btn btn-secondary btn-sm">Админ</a>
+    <div id="wallet-status">
+      <button class="btn btn-primary btn-sm" id="btn-connect">Подключить кошелёк</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Основной контент -->
+<div class="container">
+  <div class="page-header">
+    <h1>Голосования</h1>
+    <button class="btn btn-secondary btn-sm" id="btn-refresh">↻ Обновить</button>
+  </div>
+
+  <!-- Состояние загрузки -->
+  <div id="loading" class="card-grid">
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+    <div class="skeleton skeleton-card"></div>
+  </div>
+
+  <!-- Ошибка -->
+  <div id="error" class="alert alert-error" style="display:none"></div>
+
+  <!-- Список голосований -->
+  <div id="proposals-grid" class="card-grid" style="display:none"></div>
+
+  <!-- Пустое состояние -->
+  <div id="empty" class="empty-state" style="display:none">
+    <h3>Голосований пока нет</h3>
+    <p>Создайте первое голосование на странице <a href="/admin">администратора</a></p>
+  </div>
+</div>
+
+<!-- ethers.js v6 через CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/web3.js"></script>
+<script>
+// ─── Кошелёк ──────────────────────────────────────────────────────────────
+
+const btnConnect = document.getElementById('btn-connect');
+const walletStatus = document.getElementById('wallet-status');
+
+btnConnect.addEventListener('click', async () => {
+  try {
+    const account = await connectWallet();
+    renderWallet(account);
+  } catch (err) {
+    alert(parseContractError(err));
+  }
+});
+
+// Обновляем отображение при смене аккаунта
+window.addEventListener('walletChanged', (e) => {
+  renderWallet(e.detail.account);
+});
+
+function renderWallet(account) {
+  if (account) {
+    walletStatus.innerHTML = `
+      <span class="wallet-address">🟢 ${shortAddr(account)}</span>
+    `;
+  } else {
+    walletStatus.innerHTML = `
+      <button class="btn btn-primary btn-sm" id="btn-connect">Подключить кошелёк</button>
+    `;
+    document.getElementById('btn-connect').addEventListener('click', async () => {
+      const acc = await connectWallet();
+      renderWallet(acc);
+    });
+  }
+}
+
+// Проверяем — может MetaMask уже подключён
+(async () => {
+  if (isMetaMaskInstalled() && window.ethereum.selectedAddress) {
+    renderWallet(window.ethereum.selectedAddress);
+  }
+})();
+
+// ─── Загрузка голосований ──────────────────────────────────────────────────
+
+async function loadProposals() {
+  const loading = document.getElementById('loading');
+  const grid    = document.getElementById('proposals-grid');
+  const empty   = document.getElementById('empty');
+  const error   = document.getElementById('error');
+
+  loading.style.display = 'grid';
+  grid.style.display    = 'none';
+  empty.style.display   = 'none';
+  error.style.display   = 'none';
+
+  try {
+    const data = await getProposals();
+    loading.style.display = 'none';
+
+    if (!data.proposals || data.proposals.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+
+    grid.style.display = 'grid';
+    grid.innerHTML = data.proposals.map(p => renderCard(p)).join('');
+
+  } catch (err) {
+    loading.style.display = 'none';
+    error.style.display   = 'block';
+    error.textContent     = 'Ошибка загрузки: ' + err.message;
+  }
+}
+
+function renderCard(p) {
+  const deadlineTs = p.phase === 'commit' ? p.commit_deadline : p.reveal_deadline;
+  const deadlineLabel = p.phase === 'finalized'
+    ? 'Завершено ' + formatDeadline(p.reveal_deadline)
+    : 'До конца фазы: ' + countdown(deadlineTs);
+
+  return `
+    <div class="proposal-card" onclick="location.href='/proposal?id=${p.id}'">
+      <h3>${p.title}</h3>
+      <p>${p.description}</p>
+      <div class="proposal-card-footer">
+        <span class="${phaseBadgeClass(p.phase)}">${phaseLabel(p.phase)}</span>
+        <span class="countdown">${deadlineLabel}</span>
+      </div>
+    </div>
+  `;
+}
+
+(async () => {
+  const config = await fetch('/api/config').then(r => r.json());
+  setContractAddress(config.contract_address, config.registery_address);
+})();
+
+// ─── Автообновление каждые 30 секунд ──────────────────────────────────────
+
+loadProposals();
+setInterval(loadProposals, 30000);
+
+document.getElementById('btn-refresh').addEventListener('click', loadProposals);
+</script>
+
+</body>
+</html>

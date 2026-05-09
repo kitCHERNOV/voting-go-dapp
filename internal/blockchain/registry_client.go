@@ -154,3 +154,8 @@ func (r *RegistryClient) buildTransactOpts(ctx context.Context, privateKeyHex st
 	opts.Value = big.NewInt(0)
 	return opts, nil
 }
+
+// GetAddress возвращает адрес контракта VoterRegistry
+func (r *RegistryClient) GetAddress() string {
+	return r.address.Hex()
+}

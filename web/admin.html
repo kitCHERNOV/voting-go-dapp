@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Администратор — VoteChain</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-brand">
+    <a href="/" style="color:inherit;text-decoration:none">🗳 <span>Vote</span>Chain</a>
+  </div>
+  <div class="navbar-right">
+    <div id="wallet-status">
+      <button class="btn btn-primary btn-sm" id="btn-connect">Подключить кошелёк</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1>Администратор</h1>
+    <a href="/" class="btn btn-secondary btn-sm">← Все голосования</a>
+  </div>
+
+  <div id="page-alert"></div>
+
+  <!-- ═══ Создание голосования ═══ -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3 style="margin-bottom:1rem">Создать голосование</h3>
+
+    <div class="form-group">
+      <label>Название</label>
+      <input type="text" id="title" placeholder="Название голосования">
+    </div>
+    <div class="form-group">
+      <label>Описание</label>
+      <input type="text" id="description" placeholder="Краткое описание">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="form-group">
+        <label>Задержка старта (секунды, мин. 60)</label>
+        <input type="number" id="start-delay" value="120">
+      </div>
+      <div class="form-group">
+        <label>Длительность Commit (секунды, мин. 300)</label>
+        <input type="number" id="commit-duration" value="3600">
+      </div>
+      <div class="form-group">
+        <label>Длительность Reveal (секунды, мин. 300)</label>
+        <input type="number" id="reveal-duration" value="1800">
+      </div>
+      <div class="form-group">
+        <label>Депозит (wei)</label>
+        <input type="text" id="deposit" value="1000000000000000">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-create">Создать голосование</button>
+  </div>
+
+  <!-- ═══ Добавление кандидата ═══ -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3 style="margin-bottom:1rem">Добавить кандидата</h3>
+
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:1rem">
+      <div class="form-group">
+        <label>ID голосования</label>
+        <input type="number" id="cand-proposal-id" placeholder="1">
+      </div>
+      <div class="form-group">
+        <label>Имя кандидата</label>
+        <input type="text" id="cand-name" placeholder="Имя кандидата">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-add-candidate">Добавить кандидата</button>
+  </div>
+
+  <!-- ═══ Регистрация участника ═══ -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <h3 style="margin-bottom:1rem">Зарегистрировать участника</h3>
+    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem">
+      Требуется REGISTRAR_ROLE. Адрес кошелька должен иметь эту роль.
+    </p>
+
+    <div class="form-group">
+      <label>Адрес участника</label>
+      <input type="text" id="voter-address" placeholder="0x...">
+    </div>
+
+    <button class="btn btn-primary" id="btn-register">Зарегистрировать</button>
+  </div>
+
+  <!-- ═══ Список голосований ═══ -->
+  <div class="card">
+    <h3 style="margin-bottom:1rem">Текущие голосования</h3>
+    <div id="proposals-list">
+      <div class="skeleton skeleton-line"></div>
+      <div class="skeleton skeleton-line short" style="margin-top:0.5rem"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/web3.js"></script>
+<script>
+
+// ─── Кошелёк ──────────────────────────────────────────────────────────────
+
+document.getElementById('btn-connect').addEventListener('click', async () => {
+  try {
+    const account = await connectWallet();
+    renderWallet(account);
+  } catch (err) {
+    showAlert('error', parseContractError(err));
+  }
+});
+
+window.addEventListener('walletChanged', (e) => renderWallet(e.detail.account));
+
+function renderWallet(acc) {
+  const el = document.getElementById('wallet-status');
+  if (acc) {
+    el.innerHTML = `<span class="wallet-address">🟢 ${shortAddr(acc)}</span>`;
+  } else {
+    el.innerHTML = `<button class="btn btn-primary btn-sm" id="btn-connect">Подключить кошелёк</button>`;
+    document.getElementById('btn-connect').addEventListener('click', async () => {
+      renderWallet(await connectWallet());
+    });
+  }
+}
+
+(async () => {
+  if (isMetaMaskInstalled() && window.ethereum.selectedAddress) {
+    renderWallet(window.ethereum.selectedAddress);
+  }
+})();
+
+// ─── Создание голосования ─────────────────────────────────────────────────
+
+document.getElementById('btn-create').addEventListener('click', async () => {
+  const title          = document.getElementById('title').value.trim();
+  const description    = document.getElementById('description').value.trim();
+  const startDelay     = parseInt(document.getElementById('start-delay').value);
+  const commitDuration = parseInt(document.getElementById('commit-duration').value);
+  const revealDuration = parseInt(document.getElementById('reveal-duration').value);
+  const deposit        = document.getElementById('deposit').value.trim();
+
+  if (!title || !description) {
+    showAlert('error', 'Заполните название и описание');
+    return;
+  }
+
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Ожидание MetaMask...';
+
+  try {
+    await createProposal(title, description, startDelay, commitDuration, revealDuration, deposit);
+    showAlert('success', 'Голосование создано! Добавьте кандидатов до старта commit-фазы.');
+    await loadProposals();
+  } catch (err) {
+    showAlert('error', parseContractError(err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Создать голосование';
+  }
+});
+
+// ─── Добавление кандидата ─────────────────────────────────────────────────
+
+document.getElementById('btn-add-candidate').addEventListener('click', async () => {
+  const proposalId = parseInt(document.getElementById('cand-proposal-id').value);
+  const name       = document.getElementById('cand-name').value.trim();
+
+  if (!proposalId || !name) {
+    showAlert('error', 'Заполните ID голосования и имя кандидата');
+    return;
+  }
+
+  const btn = document.getElementById('btn-add-candidate');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Ожидание MetaMask...';
+
+  try {
+    await addCandidate(proposalId, name);
+    showAlert('success', `Кандидат "${name}" добавлен в голосование #${proposalId}`);
+    document.getElementById('cand-name').value = '';
+  } catch (err) {
+    showAlert('error', parseContractError(err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Добавить кандидата';
+  }
+});
+
+// ─── Регистрация участника ────────────────────────────────────────────────
+
+document.getElementById('btn-register').addEventListener('click', async () => {
+  const addr = document.getElementById('voter-address').value.trim();
+
+  if (!addr || !addr.startsWith('0x')) {
+    showAlert('error', 'Введите корректный Ethereum адрес');
+    return;
+  }
+
+  const btn = document.getElementById('btn-register');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Ожидание MetaMask...';
+
+  try {
+    await registerVoter(addr);
+    showAlert('success', `Адрес ${shortAddr(addr)} зарегистрирован`);
+    document.getElementById('voter-address').value = '';
+  } catch (err) {
+    showAlert('error', parseContractError(err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Зарегистрировать';
+  }
+});
+
+// ─── Список голосований ───────────────────────────────────────────────────
+
+async function loadProposals() {
+  const el = document.getElementById('proposals-list');
+  try {
+    const data = await getProposals();
+    if (!data.proposals || data.proposals.length === 0) {
+      el.innerHTML = '<p style="color:var(--text-muted)">Голосований нет</p>';
+      return;
+    }
+    el.innerHTML = data.proposals.map(p => `
+      <div style="display:flex;align-items:center;justify-content:space-between;
+                  padding:0.75rem 0;border-bottom:1px solid var(--border)">
+        <div>
+          <strong>#${p.id} ${p.title}</strong>
+          <span class="${phaseBadgeClass(p.phase)}" style="margin-left:0.5rem">
+            ${phaseLabel(p.phase)}
+          </span>
+        </div>
+        <a href="/proposal?id=${p.id}" class="btn btn-secondary btn-sm">Открыть</a>
+      </div>
+    `).join('');
+  } catch (err) {
+    el.innerHTML = `<p style="color:var(--danger)">Ошибка: ${err.message}</p>`;
+  }
+}
+
+// ─── Вспомогательные функции ──────────────────────────────────────────────
+
+function showAlert(type, message) {
+  const el = document.getElementById('page-alert');
+  el.className = `alert alert-${type}`;
+  el.textContent = message;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// Предзагрузка адресов
+
+// Загружаем адреса контрактов из Go-сервера
+(async () => {
+  const config = await fetch('/api/config').then(r => r.json());
+  setContractAddresses(config.contract_address, config.registry_address);
+})();
+
+// ─── Запуск ───────────────────────────────────────────────────────────────
+
+loadProposals();
+</script>
+
+</body>
+</html>

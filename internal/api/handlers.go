@@ -540,6 +540,15 @@ func (h *Handler) VerifyProposal(w http.ResponseWriter, r *http.Request) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// GetConfig — GET /api/config
+// Возвращает адреса контрактов для фронтенда.
+func (h *Handler) GetConfig(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]string{
+		"contract_address": h.client.GetAddress(),
+		"registry_address": h.registry.GetAddress(),
+	})
+}
+
 // hexToBytes32 конвертирует hex строку (с 0x или без) в [32]byte.
 func hexToBytes32(hexStr string) ([32]byte, error) {
 	hexStr = strings.TrimPrefix(hexStr, "0x")

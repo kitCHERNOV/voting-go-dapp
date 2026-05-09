@@ -103,7 +103,8 @@ func (c *Client) GetAllProposals(ctx context.Context) ([]map[string]any, error) 
 			"commit_deadline":  p.CommitDeadline.Uint64(),
 			"reveal_deadline":  p.RevealDeadline.Uint64(),
 			"deposit_required": p.DepositRequired.String(),
-			"phase":            p.Phase,
+			// "phase":            p.Phase,
+			"phase": map[uint8]string{0: "commit", 1: "reveal", 2: "finalized"}[p.Phase],
 		})
 	}
 	return proposals, nil
@@ -348,4 +349,9 @@ func (c *Client) GetProposalCommitters(ctx context.Context, proposalID uint64) (
 		result = append(result, addr.Hex())
 	}
 	return result, nil
+}
+
+// GetAddress возвращает адрес контракта Voting.
+func (c *Client) GetAddress() string {
+	return c.address.Hex()
 }
